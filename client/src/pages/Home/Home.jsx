@@ -110,6 +110,33 @@ const Home = ({ isLoggedIn }) => {
             </div>
           )}
         </section>
+        {filteredAlumni.length > 0 ? (
+          <section className={styles.cardsGrid}>
+            {filteredAlumni.map((alumnus) => (
+              <AlumniCard
+                key={alumnus.id}
+                data={alumnus}
+                onClick={() => handleOpenModal(alumnus)}
+              />
+            ))}
+          </section>
+        ) : (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>🔍</div>
+            <h2>Nenhum resultado encontrado</h2>
+            <p>Não encontramos nenhum ex-aluno que corresponda aos filtros selecionados.</p>
+            <button
+              className={styles.clearBtn}
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCurso('');
+                setSelectedAno('');
+              }}
+            >
+              Limpar todos os filtros
+            </button>
+          </div>
+        )}
       </main>
 
       {/* 5. Modal de Detalhes (só aparece se selectedAlumni não for null) */}

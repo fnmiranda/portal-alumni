@@ -7,7 +7,7 @@
     "cidade": "São Paulo",
     "estado": "SP",
     "empresa": "Tech Solutions",
-    "foto": "https://via.placeholder.com/100"
+    "foto": "https://i.pravatar.cc/150?u=1"
   },
   {
     "id": 2,
@@ -17,6 +17,66 @@
     "cidade": "Rio de Janeiro",
     "estado": "RJ",
     "empresa": "Energy Corp",
-    "foto": "https://via.placeholder.com/100"
+    "foto": "https://i.pravatar.cc/150?u=2"
+  },
+  {
+    "id": 3,
+    "nome": "Mariana Lima",
+    "curso": "Engenharia Mecânica",
+    "ano": "2015",
+    "cidade": "Curitiba",
+    "estado": "PR",
+    "empresa": "AutoParts Brasil",
+    "foto": "https://i.pravatar.cc/150?u=3"
+  },
+  {
+    "id": 4,
+    "nome": "Pedro Santos",
+    "curso": "Engenharia de Fortificação e Construção",
+    "ano": "2020",
+    "cidade": "Brasília",
+    "estado": "DF",
+    "empresa": "GovBuild",
+    "foto": "https://i.pravatar.cc/150?u=4"
+  },
+  {
+    "id": 5,
+    "nome": "Carla Oliveira",
+    "curso": "Engenharia Eletrônica",
+    "ano": "2021",
+    "cidade": "Belo Horizonte",
+    "estado": "MG",
+    "empresa": "ChipDesign",
+    "foto": "https://i.pravatar.cc/150?u=5"
+  },
+  {
+    "id": 6,
+    "nome": "Lucas Ferreira",
+    "curso": "Engenharia Química",
+    "ano": "2017",
+    "cidade": "Salvador",
+    "estado": "BA",
+    "empresa": "BioFuel Tech",
+    "foto": "https://i.pravatar.cc/150?u=6"
+  },
+  {
+    "id": 7,
+    "nome": "Beatriz Costa",
+    "curso": "Engenharia de Computação",
+    "ano": "2019",
+    "cidade": "Florianópolis",
+    "estado": "SC",
+    "empresa": "GameDev Studio",
+    "foto": "https://i.pravatar.cc/150?u=7"
+  },
+  {
+    "id": 8,
+    "nome": "Ricardo Gomes",
+    "curso": "Engenharia Mecânica",
+    "ano": "2016",
+    "cidade": "Porto Alegre",
+    "estado": "RS",
+    "empresa": "HeavyMachinery",
+    "foto": "https://i.pravatar.cc/150?u=8"
   }
 ]
