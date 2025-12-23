@@ -24,8 +24,8 @@ const Header = ({ onAddClick, isLoggedIn, setIsLoggedIn }) => { // Receba o setI
               <button className={styles.addBtn} onClick={onAddClick}>
                 <Plus size={18} /> Adicionar Perfil
               </button>
-              <button className={styles.logoutBtn} onClick={handleLogout} title="Sair">
-                <LogOut size={18} />
+              <button className={styles.logoutBtn} onClick={handleLogout}>
+                <LogOut size={18} /> Sair
               </button>
             </>
           ) : (
