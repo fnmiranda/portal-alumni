@@ -20,7 +20,13 @@
   margin-bottom: 1rem;
 }
 
-.card h3 { margin-bottom: 0.5rem; font-weight: 700; color: #121a36; }
+.card h3 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #121a36;
+  align-items: center;
+  justify-content: center;
+}
 
 .card p {
   color: #424242;
