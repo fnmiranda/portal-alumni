@@ -1,46 +1,94 @@
-.siteFooter {
+.footer {
+  color: #ffffff;
+  padding: 3rem 2rem;
   width: 100%;
-  background: #121a36;
-  color: #e7e9f1;
-  padding: 40px 0;
-  margin-top: auto; /* Empurra para o fim da página */
 }
 
-.footerInner {
-  width: 95%;
-  max-width: 1500px;
+.container {
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end; /* Alinha os blocos pela base */
+  gap: 2rem;
 }
 
-.footerLeft { flex: 1; }
-.footerLeft h3 { margin-bottom: 10px; color: #ffcc66; }
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
-.footerRight {
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.slogan {
+  font-size: 1rem;
+  color: #cbd5e1; /* Branco levemente acinzentado */
+  margin: 0 0 1rem 0;
+}
+
+.legalInfo {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.legalInfo p {
+  margin: 2px 0;
+}
+
+.rightSection {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 15px;
+  gap: 1.5rem;
 }
 
-.footerSocial { display: flex; gap: 15px; }
+.socialIcons {
+  display: flex;
+  gap: 1rem;
+}
 
-.socialBtn {
+.iconCircle {
+  background-color: #ffffff;
+  color: #0d1425; /* Cor do fundo dentro do ícone */
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #1d2645;
   display: flex;
-  justify-content: center;
   align-items: center;
-  transition: background 0.3s;
+  justify-content: center;
+  transition: opacity 0.2s;
 }
 
-.socialBtn:hover { background: #cc4b00; }
+.iconCircle:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
+}
 
-@media (max-width: 760px) {
-  .footerInner { flex-direction: column; text-align: center; }
-  .footerRight { align-items: center; }
+.legalLink {
+  color: #d4a017; /* Tom dourado da imagem */
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.legalLink:hover {
+  text-decoration: underline;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .rightSection {
+    align-items: center;
+  }
 }
