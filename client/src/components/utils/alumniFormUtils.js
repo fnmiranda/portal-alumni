@@ -63,7 +63,8 @@ export function applyPtBrValidityMessage(el) {
   }
 }
 
-/** Regra: nascimento entre hoje e (hoje - maxYears) */
+/* ------------------ Datas: regra 110 anos ------------------ (improvável que o usuário tenha mais que 110 anos de idade*/
+
 function toLocalIso(d) {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -73,14 +74,14 @@ function toLocalIso(d) {
 
 export function getBirthDateBoundsIso(maxYears = 110) {
   const now = new Date();
-  const maxIso = toLocalIso(now);
+  const maxIso = toLocalIso(now); // hoje (não pode futuro)
 
   const minDate = new Date(
     now.getFullYear() - maxYears,
     now.getMonth(),
     now.getDate(),
   );
-  const minIso = toLocalIso(minDate);
+  const minIso = toLocalIso(minDate); // hoje - maxYears
 
   return { minIso, maxIso };
 }
@@ -90,10 +91,64 @@ export function validateBirthDate(br, minIso, maxIso) {
   if (!v) return '';
 
   const iso = brToIso(v);
-  if (!iso) return 'Use uma data real.';
+  if (!iso) return 'Use dd/mm/aaaa e uma data real.';
 
-  if (iso < minIso) return 'Tem certeza que digitou certo?';
-  if (iso > maxIso) return 'Tem certeza que digitou certo?';
+  // Comparação ISO (YYYY-MM-DD) funciona por ordem lexicográfica
+  if (iso < minIso) return 'Data muito antiga, tem certeza?';
+  if (iso > maxIso) return 'Data errada, tente novamente';
+
+  return '';
+}
+
+/* ------------------ Ano de formatura ------------------ */
+
+export function validateGraduationYear(yearRaw) {
+  const value = String(yearRaw || '').trim();
+  if (!value) return ''; // required do browser já cuida
+
+  if (!/^\d{4}$/.test(value)) return 'Digite um ano válido com 4 dígitos.';
+  const year = Number(value);
+
+  const currentYear = new Date().getFullYear();
+
+  // Não dá pra “já ter se formado” em ano futuro
+  if (year > currentYear) {
+    return `Ano de formatura deve ser antes que ${currentYear}.`;
+  }
+
+  // sanity (opcional, mas bom)
+  if (year < 1900) {
+    return 'Ano de formatura muito antigo. Verifique.';
+  }
+
+  return '';
+}
+
+/* ------------------ Telefone (opcional) ------------------ */
+/**
+ * Regras simples (práticas):
+ * - Vazio: ok (campo opcional)
+ * - Se começa com "+": internacional -> 8 a 15 dígitos (E.164 até 15)
+ * - Se não começa com "+": nacional (BR) -> 10 ou 11 dígitos (DDD + número)
+ */
+export function validatePhone(phoneRaw) {
+  const raw = String(phoneRaw || '').trim();
+  if (!raw) return '';
+
+  const hasPlus = raw.startsWith('+');
+  const digits = raw.replace(/\D/g, '');
+
+  if (hasPlus) {
+    if (digits.length < 8 || digits.length > 15) {
+      return 'Telefone internacional deve ter entre 8 e 15 dígitos (incluindo o código do país).';
+    }
+    return '';
+  }
+
+  // nacional (BR)
+  if (!(digits.length === 10 || digits.length === 11)) {
+    return 'Telefone nacional deve ter 10 ou 11 dígitos (DDD + número).';
+  }
 
   return '';
 }

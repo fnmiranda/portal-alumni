@@ -11,6 +11,8 @@ import {
   applyPtBrValidityMessage,
   getBirthDateBoundsIso,
   validateBirthDate,
+  validateGraduationYear,
+  validatePhone,
 } from '../utils/alumniFormUtils';
 
 const DEFAULT_COURSES = [
@@ -105,6 +107,14 @@ export default function AddAlumniModal({
   const [showValidation, setShowValidation] = useState(false);
 
   const birthBounds = useMemo(() => getBirthDateBoundsIso(110), []);
+
+  // refs pra bolha nativa (reportValidity)
+  const formRef = useRef(null);
+  const birthInputRef = useRef(null);
+  const gradYearInputRef = useRef(null);
+  const phoneInputRef = useRef(null);
+
+  // input date escondido pra abrir o calendário
   const hiddenDateRef = useRef(null);
 
   const { countries, states, cities, loadingStates, loadingCities, isBrazil } =
@@ -155,6 +165,7 @@ export default function AddAlumniModal({
   function handleHiddenDateChange(e) {
     setField('birthDate', isoToBr(e.target.value));
     setExtraErrors((prev) => ({ ...prev, birthDate: '' }));
+    birthInputRef.current?.setCustomValidity('');
   }
 
   function handlePhotoChange(e) {
@@ -184,22 +195,47 @@ export default function AddAlumniModal({
     setExtraErrors((prev) => ({ ...prev, photoFile: '' }));
   }
 
-  function validateBirthDateAndSetError() {
-    const msg = validateBirthDate(
+  // helper: seta erro detalhado embaixo + bolha "Corrija sua informação"
+  function setCustomFieldError(ref, fieldName, message) {
+    setExtraErrors((prev) => ({ ...prev, [fieldName]: message || '' }));
+    if (ref?.current) {
+      ref.current.setCustomValidity(message ? 'Corrija sua informação' : '');
+    }
+  }
+
+  function runCustomValidations() {
+    // 1) nascimento coerente (<= 110 anos e não futuro)
+    const birthMsg = validateBirthDate(
       form.birthDate,
       birthBounds.minIso,
       birthBounds.maxIso,
     );
-    setExtraErrors((prev) => ({ ...prev, birthDate: msg }));
-    return msg;
+    setCustomFieldError(birthInputRef, 'birthDate', birthMsg);
+
+    // 2) ano de formatura não pode ser futuro
+    const gradMsg = validateGraduationYear(form.graduationYear);
+    setCustomFieldError(gradYearInputRef, 'graduationYear', gradMsg);
+
+    // 3) telefone: opcional, mas se preenchido deve estar ok
+    const phoneMsg = validatePhone(form.phone);
+    setCustomFieldError(phoneInputRef, 'phone', phoneMsg);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setShowValidation(true);
 
-    const birthMsg = validateBirthDateAndSetError();
-    if (birthMsg) return;
+    // roda nossas 3 validações
+    runCustomValidations();
+
+    // dispara bolhas nativas (required/pattern + nossas custom)
+    const formEl = formRef.current;
+    if (formEl && !formEl.checkValidity()) {
+      formEl.reportValidity();
+      const firstInvalid = formEl.querySelector(':invalid');
+      firstInvalid?.focus();
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -259,6 +295,7 @@ export default function AddAlumniModal({
         </header>
 
         <form
+          ref={formRef}
           className={`form ${showValidation ? 'validated' : ''}`}
           onSubmit={handleSubmit}
           onInvalidCapture={() => setShowValidation(true)}
@@ -351,12 +388,12 @@ export default function AddAlumniModal({
               input={
                 <div className="dateRow">
                   <input
+                    ref={birthInputRef}
                     name="birthDate"
                     value={form.birthDate}
                     onChange={(e) =>
                       setField('birthDate', normalizeBrDate(e.target.value))
                     }
-                    onBlur={validateBirthDateAndSetError}
                     placeholder="dd/mm/aaaa"
                     inputMode="numeric"
                     maxLength={10}
@@ -365,6 +402,15 @@ export default function AddAlumniModal({
                     onInput={(e) => {
                       e.target.setCustomValidity('');
                       setExtraErrors((prev) => ({ ...prev, birthDate: '' }));
+                    }}
+                    onBlur={() => {
+                      // validação coerente também no blur
+                      const msg = validateBirthDate(
+                        form.birthDate,
+                        birthBounds.minIso,
+                        birthBounds.maxIso,
+                      );
+                      setCustomFieldError(birthInputRef, 'birthDate', msg);
                     }}
                   />
 
@@ -417,8 +463,10 @@ export default function AddAlumniModal({
             <Field
               label="Ano de Formatura"
               required
+              error={extraErrors.graduationYear}
               input={
                 <input
+                  ref={gradYearInputRef}
                   name="graduationYear"
                   value={form.graduationYear}
                   onChange={(e) =>
@@ -429,7 +477,21 @@ export default function AddAlumniModal({
                   required
                   pattern="^\d{4}$"
                   onInvalid={(e) => applyPtBrValidityMessage(e.target)}
-                  onInput={(e) => e.target.setCustomValidity('')}
+                  onInput={(e) => {
+                    e.target.setCustomValidity('');
+                    setExtraErrors((prev) => ({
+                      ...prev,
+                      graduationYear: '',
+                    }));
+                  }}
+                  onBlur={() => {
+                    const msg = validateGraduationYear(form.graduationYear);
+                    setCustomFieldError(
+                      gradYearInputRef,
+                      'graduationYear',
+                      msg,
+                    );
+                  }}
                 />
               }
             />
@@ -553,13 +615,23 @@ export default function AddAlumniModal({
 
             <Field
               label="Telefone (Nacional/Internacional)"
-              hint="Para números internacionais, inclua o código do país: +55 (Brasil), +1 (EUA), etc."
+              hint="Opcional. Se internacional, inclua o DDI (+55, +1...)."
+              error={extraErrors.phone}
               input={
                 <input
+                  ref={phoneInputRef}
                   name="phone"
                   value={form.phone}
                   onChange={(e) => setField('phone', e.target.value)}
                   placeholder="ex: (11) 99999-9999 ou +55 11 99999-9999"
+                  onInput={(e) => {
+                    e.target.setCustomValidity('');
+                    setExtraErrors((prev) => ({ ...prev, phone: '' }));
+                  }}
+                  onBlur={() => {
+                    const msg = validatePhone(form.phone);
+                    setCustomFieldError(phoneInputRef, 'phone', msg);
+                  }}
                 />
               }
             />
