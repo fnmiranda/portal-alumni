@@ -1,5 +1,18 @@
+// client/src/components/AddAlumniModal/AddAlumniModal.jsx
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './AddAlumniModal.css';
+import { useIbgeLocations } from '../hooks/useIbgeLocations';
+
+import {
+  normalizeYear,
+  normalizeBrDate,
+  brToIso,
+  isoToBr,
+  applyPtBrValidityMessage,
+  getEmailStatus,
+  getBirthDateBoundsIso,
+  validateBirthDate,
+} from '../utils/alumniFormUtils';
 
 const DEFAULT_COURSES = [
   'Engenharia Cartográfica',
@@ -12,129 +25,6 @@ const DEFAULT_COURSES = [
   'Engenharia Mecânica',
   'Engenharia Química',
 ];
-
-const initialForm = {
-  fullName: '',
-  preferredName: '',
-  birthDate: '', // dd/mm/aaaa
-  course: '',
-  graduationYear: '',
-  stateUf: '', // "RJ"
-  city: '',
-  organization: '',
-  role: '',
-  email: '',
-  phone: '',
-  linkedinUser: '',
-  bio: '',
-  photoFile: null,
-  photoPreviewUrl: '',
-};
-
-function normalizeYear(value) {
-  return value.replace(/\D/g, '').slice(0, 4);
-}
-
-function normalizeBrDate(value) {
-  const digits = value.replace(/\D/g, '').slice(0, 8);
-  const dd = digits.slice(0, 2);
-  const mm = digits.slice(2, 4);
-  const yyyy = digits.slice(4, 8);
-
-  let out = dd;
-  if (mm) out += `/${mm}`;
-  if (yyyy) out += `/${yyyy}`;
-  return out;
-}
-
-function brToIso(br) {
-  const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!m) return '';
-
-  const dd = Number(m[1]);
-  const mm = Number(m[2]);
-  const yyyy = Number(m[3]);
-
-  // valida se a data existe de verdade (ex: 31/02 não passa)
-  const date = new Date(Date.UTC(yyyy, mm - 1, dd));
-  const ok =
-    date.getUTCFullYear() === yyyy &&
-    date.getUTCMonth() === mm - 1 &&
-    date.getUTCDate() === dd;
-
-  if (!ok) return '';
-  return `${yyyy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(
-    2,
-    '0',
-  )}`;
-}
-
-function isoToBr(iso) {
-  if (!iso) return '';
-  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return '';
-  return `${m[3]}/${m[2]}/${m[1]}`;
-}
-
-function applyPtBrValidityMessage(el) {
-  el.setCustomValidity('');
-
-  if (el.validity.valueMissing) {
-    el.setCustomValidity('Preencha este campo.');
-    return;
-  }
-
-  if (el.validity.typeMismatch && el.type === 'email') {
-    el.setCustomValidity('Digite um email válido.');
-    return;
-  }
-
-  if (el.validity.patternMismatch) {
-    if (el.name === 'graduationYear') {
-      el.setCustomValidity('Digite um ano válido com 4 dígitos (ex: 2020).');
-      return;
-    }
-    if (el.name === 'birthDate') {
-      el.setCustomValidity('Use o formato dd/mm/aaaa.');
-      return;
-    }
-    el.setCustomValidity('Formato inválido.');
-  }
-}
-
-const COMMON_EMAIL_DOMAINS = new Set([
-  'gmail.com',
-  'hotmail.com',
-  'outlook.com',
-  'live.com',
-  'yahoo.com',
-  'icloud.com',
-  'proton.me',
-  'protonmail.com',
-  'uol.com.br',
-  'bol.com.br',
-  'ig.com.br',
-  'terra.com.br',
-]);
-
-function getEmailStatus(valueRaw) {
-  const value = valueRaw.trim().toLowerCase();
-  if (!value) return { status: 'empty', message: '' };
-
-  const basicOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  if (!basicOk)
-    return { status: 'invalid', message: 'Formato de email inválido' };
-
-  const domain = value.split('@')[1] || '';
-  if (COMMON_EMAIL_DOMAINS.has(domain)) {
-    return { status: 'valid', message: 'Email válido' };
-  }
-
-  return {
-    status: 'uncommon',
-    message: 'Domínio não comum, verifique se está correto',
-  };
-}
 
 const DEFAULT_ROLE_GROUPS = [
   {
@@ -176,27 +66,48 @@ const DEFAULT_ROLE_GROUPS = [
   },
 ];
 
+const initialForm = {
+  fullName: '',
+  preferredName: '',
+  birthDate: '', // dd/mm/aaaa
+  course: '',
+  graduationYear: '',
+  stateUf: '', // "RJ"
+  city: '',
+  organization: '',
+  role: '',
+  email: '',
+  phone: '',
+  linkedinUser: '',
+  bio: '',
+  photoFile: null,
+  photoPreviewUrl: '',
+};
+
 export default function AddAlumniModal({
   isOpen = true,
   onClose,
   onSubmit,
-  courses = DEFAULT_COURSES, // aqui entra a lista completa
+  courses = DEFAULT_COURSES,
   roles = DEFAULT_ROLE_GROUPS,
 }) {
   const [form, setForm] = useState(initialForm);
   const [extraErrors, setExtraErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // controla quando mostrar borda/erro de required (só após tentativa de enviar)
+  // controla quando mostrar borda/erro (só após tentativa de enviar)
   const [showValidation, setShowValidation] = useState(false);
 
-  // IBGE: UFs e cidades
-  const [ufs, setUfs] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [loadingUfs, setLoadingUfs] = useState(false);
-  const [loadingCities, setLoadingCities] = useState(false);
+  // IBGE
+  const { ufs, cities, loadingUfs, loadingCities } = useIbgeLocations(
+    isOpen,
+    form.stateUf,
+  );
 
-  // input date escondido pra abrir o calendário, mantendo o campo digitável
+  // limites de idade (110 anos) e não permite futuro
+  const birthBounds = useMemo(() => getBirthDateBoundsIso(110), []);
+
+  // input date escondido pra abrir o calendário
   const hiddenDateRef = useRef(null);
 
   function setField(name, value) {
@@ -213,86 +124,19 @@ export default function AddAlumniModal({
     setShowValidation(false);
   }, [isOpen]);
 
-  // carrega UFs (IBGE) ao abrir
+  // UF mudou -> zera cidade no form (a lista de cities o hook já recalcula)
   useEffect(() => {
     if (!isOpen) return;
-
-    let cancelled = false;
-    const ctrl = new AbortController();
-
-    async function loadUfs() {
-      try {
-        setLoadingUfs(true);
-        const res = await fetch(
-          'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome',
-          { signal: ctrl.signal },
-        );
-        const data = await res.json();
-        if (!cancelled) setUfs(Array.isArray(data) ? data : []);
-      } catch {
-        if (!cancelled) setUfs([]);
-      } finally {
-        if (!cancelled) setLoadingUfs(false);
-      }
-    }
-
-    loadUfs();
-    return () => {
-      cancelled = true;
-      ctrl.abort();
-    };
-  }, [isOpen]);
-
-  // UF mudou -> zera cidade e busca municípios daquela UF
-  useEffect(() => {
-    if (!isOpen) return;
-
     setForm((prev) => ({ ...prev, city: '' }));
-    setCities([]);
+    setExtraErrors((prev) => ({ ...prev, city: '' }));
+  }, [isOpen, form.stateUf]);
 
-    if (!form.stateUf || !ufs.length) return;
-
-    const ufObj = ufs.find((u) => u.sigla === form.stateUf);
-    if (!ufObj?.id) return;
-
-    let cancelled = false;
-    const ctrl = new AbortController();
-
-    async function loadCities() {
-      try {
-        setLoadingCities(true);
-        const res = await fetch(
-          `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufObj.id}/municipios?orderBy=nome`,
-          { signal: ctrl.signal },
-        );
-        const data = await res.json();
-
-        if (!cancelled) {
-          setCities(
-            Array.isArray(data) ? data.map((m) => m.nome).filter(Boolean) : [],
-          );
-        }
-      } catch {
-        if (!cancelled) setCities([]);
-      } finally {
-        if (!cancelled) setLoadingCities(false);
-      }
-    }
-
-    loadCities();
-    return () => {
-      cancelled = true;
-      ctrl.abort();
-    };
-  }, [isOpen, form.stateUf, ufs]);
-
-  // evita leak de preview de imagem
+  // evita leak de preview de imagem (CORRETO: depende da URL)
   useEffect(() => {
     return () => {
       if (form.photoPreviewUrl) URL.revokeObjectURL(form.photoPreviewUrl);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [form.photoPreviewUrl]);
 
   const emailInfo = useMemo(() => getEmailStatus(form.email), [form.email]);
 
@@ -305,6 +149,7 @@ export default function AddAlumniModal({
 
   function handleHiddenDateChange(e) {
     setField('birthDate', isoToBr(e.target.value));
+    setExtraErrors((prev) => ({ ...prev, birthDate: '' }));
   }
 
   function handlePhotoChange(e) {
@@ -334,17 +179,22 @@ export default function AddAlumniModal({
     setExtraErrors((prev) => ({ ...prev, photoFile: '' }));
   }
 
+  function validateBirthDateAndSetError() {
+    const msg = validateBirthDate(
+      form.birthDate,
+      birthBounds.minIso,
+      birthBounds.maxIso,
+    );
+    setExtraErrors((prev) => ({ ...prev, birthDate: msg }));
+    return msg;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setShowValidation(true);
 
-    if (form.birthDate.trim() && !brToIso(form.birthDate.trim())) {
-      setExtraErrors((prev) => ({
-        ...prev,
-        birthDate: 'Use dd/mm/aaaa e uma data real.',
-      }));
-      return;
-    }
+    const birthMsg = validateBirthDateAndSetError();
+    if (birthMsg) return;
 
     try {
       setIsSubmitting(true);
@@ -356,7 +206,9 @@ export default function AddAlumniModal({
           ? brToIso(form.birthDate.trim())
           : null,
         course: form.course,
-        graduationYear: Number(form.graduationYear),
+        graduationYear: form.graduationYear
+          ? Number(form.graduationYear)
+          : null,
         state: form.stateUf,
         city: form.city,
         organization: form.organization.trim(),
@@ -397,7 +249,6 @@ export default function AddAlumniModal({
         <form
           className={`form ${showValidation ? 'validated' : ''}`}
           onSubmit={handleSubmit}
-          // quando o browser detectar inválido, a gente liga o "modo validação"
           onInvalidCapture={() => setShowValidation(true)}
         >
           {/* FOTO */}
@@ -471,7 +322,7 @@ export default function AddAlumniModal({
 
             <Field
               label="Data de Aniversário"
-              hint="Você pode digitar (dd/mm/aaaa) ou usar o calendário."
+              hint={`Você pode digitar (dd/mm/aaaa) ou usar o calendário.`}
               error={extraErrors.birthDate}
               input={
                 <div className="dateRow">
@@ -481,8 +332,10 @@ export default function AddAlumniModal({
                     onChange={(e) =>
                       setField('birthDate', normalizeBrDate(e.target.value))
                     }
+                    onBlur={validateBirthDateAndSetError}
                     placeholder="dd/mm/aaaa"
                     inputMode="numeric"
+                    maxLength={10}
                     pattern="^\d{2}\/\d{2}\/\d{4}$"
                     onInvalid={(e) => applyPtBrValidityMessage(e.target)}
                     onInput={(e) => {
@@ -490,6 +343,7 @@ export default function AddAlumniModal({
                       setExtraErrors((prev) => ({ ...prev, birthDate: '' }));
                     }}
                   />
+
                   <button
                     type="button"
                     className="calendarBtn"
@@ -498,10 +352,13 @@ export default function AddAlumniModal({
                   >
                     📅
                   </button>
+
                   <input
                     ref={hiddenDateRef}
                     className="hiddenDate"
                     type="date"
+                    min={birthBounds.minIso}
+                    max={birthBounds.maxIso}
                     value={brToIso(form.birthDate) || ''}
                     onChange={handleHiddenDateChange}
                     tabIndex={-1}
@@ -511,7 +368,6 @@ export default function AddAlumniModal({
               }
             />
 
-            {/* CURSOS COMPLETOS */}
             <Field
               label="Curso"
               required
@@ -743,8 +599,7 @@ export default function AddAlumniModal({
 }
 
 /**
- * Field: componente “wrapper” pra manter o layout consistente:
- * label + required (*) + input + hint/erro.
+ * Field: wrapper de layout: label + required (*) + input + hint/erro.
  */
 function Field({ label, required, hint, error, input, fullWidth }) {
   return (
