@@ -67,6 +67,18 @@ const DEFAULT_ROLE_GROUPS = [
   },
 ];
 
+const ALL_SKILLS = [
+  "Gestão de Projetos", "Liderança", "Python", "AutoCAD", "SolidWorks", "C++", "MATLAB",
+  "Excel Avançado", "Inglês Fluente", "Planejamento Estratégico", "Lean Manufacturing"
+];
+
+const SUGGESTIONS_BY_CATEGORY = {
+  "Engenharia & Técnica": ["AutoCAD", "SolidWorks", "MATLAB", "Python", "C++", "Cálculo Estrutural"],
+  "Soft Skills": ["Liderança", "Comunicação Assertiva", "Trabalho em Equipe", "Gestão de Tempo"],
+  "Gestão & Negócios": ["Planejamento Estratégico", "Logística", "Finanças", "Gestão de Riscos"],
+  "Idiomas": ["Inglês Fluente", "Espanhol", "Francês", "Alemão"]
+};
+
 // MOCK vindo do "login"
 const MOCK_FULL_NAME = 'João da Silva Filho';
 const MOCK_EMAIL = 'joao.silva@gmail.com';
@@ -89,6 +101,7 @@ const initialForm = {
   phone: '',
   linkedinUser: '',
   bio: '',
+  skills: [],
 
   photoFile: null,
   photoPreviewUrl: '',
@@ -108,6 +121,9 @@ export default function AddAlumniModal({
 
   const birthBounds = useMemo(() => getBirthDateBoundsIso(110), []);
 
+  const [skillInput, setSkillInput] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   // refs pra bolha nativa (reportValidity)
   const formRef = useRef(null);
   const birthInputRef = useRef(null);
@@ -124,6 +140,37 @@ export default function AddAlumniModal({
     setForm((prev) => ({ ...prev, [name]: value }));
     setExtraErrors((prev) => ({ ...prev, [name]: '' }));
   }
+
+  // Filtra a lista mestre baseada no que o usuário digita
+  const filteredSuggestions = useMemo(() => {
+    const query = skillInput.trim().toLowerCase();
+    if (!query) return [];
+    return ALL_SKILLS.filter(s =>
+      s.toLowerCase().includes(query) &&
+      !form.skills.includes(s)
+    ).slice(0, 6); // Limita a 6 sugestões no dropdown
+  }, [skillInput, form.skills]);
+
+  // Função única para adicionar habilidade
+  const addSkill = (skill) => {
+    const cleanSkill = skill.trim();
+    if (cleanSkill && !form.skills.includes(cleanSkill)) {
+      setField('skills', [...form.skills, cleanSkill]);
+      setSkillInput('');
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSkillKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Impede o envio do formulário
+      addSkill(skillInput);
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setField('skills', form.skills.filter(s => s !== skillToRemove));
+  };
 
   // reset ao abrir
   useEffect(() => {
@@ -528,8 +575,8 @@ export default function AddAlumniModal({
                     {!form.countryIso2
                       ? 'Primeiro selecione o país'
                       : loadingStates
-                      ? 'Carregando estados...'
-                      : 'Selecione o estado'}
+                        ? 'Carregando estados...'
+                        : 'Selecione o estado'}
                   </option>
 
                   {states.map((s) => (
@@ -557,8 +604,8 @@ export default function AddAlumniModal({
                     {!form.stateUf
                       ? 'Primeiro selecione o estado'
                       : loadingCities
-                      ? 'Carregando cidades...'
-                      : 'Selecione a cidade'}
+                        ? 'Carregando cidades...'
+                        : 'Selecione a cidade'}
                   </option>
 
                   {cities.map((city) => (
@@ -650,6 +697,60 @@ export default function AddAlumniModal({
                   placeholder="Conte sobre você, sua experiência e interesses..."
                   rows={4}
                 />
+              }
+            />
+
+            <Field
+              label="Habilidades"
+              fullWidth
+              input={
+                <div className="skillsWrapper">
+                  <div className="inputRelative" style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={skillInput}
+                      onChange={(e) => {
+                        setSkillInput(e.target.value);
+                        setShowSuggestions(true);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      onKeyDown={handleSkillKeyDown}
+                      placeholder="Procure ou digite uma habilidade e aperte Enter..."
+                      className="skillInputMain"
+                    />
+
+                    {/* Dropdown de sugestões flutuante */}
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                      <div className="suggestionsDropdown">
+                        {filteredSuggestions.map(sug => (
+                          <div
+                            key={sug}
+                            className="dropdownOption"
+                            onClick={() => addSkill(sug)}
+                          >
+                            + {sug}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Área de Tags (Habilidades já selecionadas) */}
+                  <div className="selectedSkillsArea">
+                    {form.skills.map((skill) => (
+                      <span key={skill} className="skillTag">
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          aria-label={`Remover ${skill}`}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               }
             />
           </section>
