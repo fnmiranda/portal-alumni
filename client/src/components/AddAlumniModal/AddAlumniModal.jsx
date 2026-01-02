@@ -572,61 +572,81 @@ export default function AddAlumniModal({
               }
             />
 
-            {/* Estado + Cidade (padrão). Se o país não tiver estados, some e entra Complemento. */}
+            {/* Estado + Cidade (padrão). Se o país não tiver estados, entra Complemento. */}
             {showStateAndCity ? (
               <>
                 <Field
                   label="Estado"
                   required
-                  disabled={!form.countryIso2 || loadingStates}
-                  onInvalid={(e) => applyPtBrValidityMessage(e.target)}
-                  onInput={(e) => e.target.setCustomValidity('')}
-                >
-                  <option value="">
-                    {!form.countryIso2
-                      ? 'Primeiro selecione o país'
-                      : loadingStates
-                        ? 'Carregando estados...'
-                        : 'Selecione o estado'}
-                  </option>
+                  input={
+                    <select
+                      name="stateUf"
+                      value={form.stateUf}
+                      onChange={(e) => setField('stateUf', e.target.value)}
+                      required
+                      disabled={!form.countryIso2 || loadingStates}
+                      onInvalid={(e) => applyPtBrValidityMessage(e.target)}
+                      onInput={(e) => e.target.setCustomValidity('')}
+                    >
+                      <option value="">
+                        {!form.countryIso2
+                          ? 'Primeiro selecione o país'
+                          : loadingStates
+                            ? 'Carregando estados...'
+                            : 'Selecione o estado'}
+                      </option>
+                      {states.map((s) => (
+                        <option key={`${s.code}-${s.name}`} value={s.code}>
+                          {isBrazil ? `${s.code} - ${s.name}` : s.name}
+                        </option>
+                      ))}
+                    </select>
+                  }
+                />
 
-                  {states.map((s) => (
-                    <option key={`${s.code}-${s.name}`} value={s.code}>
-                      {isBrazil ? `${s.code} - ${s.name}` : s.name}
-                    </option>
-                  ))}
-                </select>
-              }
-            />
-            <Field
-              label="Cidade"
-              required
-              input={
-                <select
-                  name="city"
-                  value={form.city}
-                  onChange={(e) => setField('city', e.target.value)}
+                <Field
+                  label="Cidade"
                   required
-                  disabled={!form.stateUf || loadingCities}
-                  onInvalid={(e) => applyPtBrValidityMessage(e.target)}
-                  onInput={(e) => e.target.setCustomValidity('')}
-                >
-                  <option value="">
-                    {!form.stateUf
-                      ? 'Primeiro selecione o estado'
-                      : loadingCities
-                        ? 'Carregando cidades...'
-                        : 'Selecione a cidade'}
-                  </option>
-
-                  {cities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-              }
-            />
+                  input={
+                    <select
+                      name="city"
+                      value={form.city}
+                      onChange={(e) => setField('city', e.target.value)}
+                      required
+                      disabled={!form.stateUf || loadingCities}
+                      onInvalid={(e) => applyPtBrValidityMessage(e.target)}
+                      onInput={(e) => e.target.setCustomValidity('')}
+                    >
+                      <option value="">
+                        {!form.stateUf
+                          ? 'Primeiro selecione o estado'
+                          : loadingCities
+                            ? 'Carregando cidades...'
+                            : 'Selecione a cidade'}
+                      </option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  }
+                />
+              </>
+            ) : (
+              <Field
+                label="Complemento / Cidade"
+                fullWidth
+                input={
+                  <input
+                    name="city"
+                    value={form.city}
+                    onChange={(e) => setField('city', e.target.value)}
+                    placeholder="Digite sua cidade ou província"
+                  />
+                }
+              />
+            )}
             <Field
               label="Empresa/Instituição"
               input={
