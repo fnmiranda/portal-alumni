@@ -68,15 +68,41 @@ const DEFAULT_ROLE_GROUPS = [
 ];
 
 const ALL_SKILLS = [
-  "Gestão de Projetos", "Liderança", "Python", "AutoCAD", "SolidWorks", "C++", "MATLAB",
-  "Excel Avançado", "Inglês Fluente", "Planejamento Estratégico", "Lean Manufacturing"
+  'Gestão de Projetos',
+  'Liderança',
+  'Python',
+  'AutoCAD',
+  'SolidWorks',
+  'C++',
+  'MATLAB',
+  'Excel Avançado',
+  'Inglês Fluente',
+  'Planejamento Estratégico',
+  'Lean Manufacturing',
 ];
 
 const SUGGESTIONS_BY_CATEGORY = {
-  "Engenharia & Técnica": ["AutoCAD", "SolidWorks", "MATLAB", "Python", "C++", "Cálculo Estrutural"],
-  "Soft Skills": ["Liderança", "Comunicação Assertiva", "Trabalho em Equipe", "Gestão de Tempo"],
-  "Gestão & Negócios": ["Planejamento Estratégico", "Logística", "Finanças", "Gestão de Riscos"],
-  "Idiomas": ["Inglês Fluente", "Espanhol", "Francês", "Alemão"]
+  'Engenharia & Técnica': [
+    'AutoCAD',
+    'SolidWorks',
+    'MATLAB',
+    'Python',
+    'C++',
+    'Cálculo Estrutural',
+  ],
+  'Soft Skills': [
+    'Liderança',
+    'Comunicação Assertiva',
+    'Trabalho em Equipe',
+    'Gestão de Tempo',
+  ],
+  'Gestão & Negócios': [
+    'Planejamento Estratégico',
+    'Logística',
+    'Finanças',
+    'Gestão de Riscos',
+  ],
+  Idiomas: ['Inglês Fluente', 'Espanhol', 'Francês', 'Alemão'],
 };
 
 // MOCK vindo do "login"
@@ -94,6 +120,7 @@ const initialForm = {
   countryIso2: '',
   stateUf: '',
   city: '',
+  addressComplement: '', // ✅ novo (opcional)
 
   organization: '',
   role: '',
@@ -142,11 +169,12 @@ export default function AddAlumniModal({
     isBrazil,
     hasStates,
     allowManualCity,
-    citiesAvailable, // pode não ser usado aqui, mas deixei se quiser
+    citiesAvailable,
+    needsAddressComplement, // ✅ novo (Bangladesh etc.)
   } = useCountryLocations(isOpen, form.countryIso2, form.stateUf);
 
   // Antes de selecionar país, mantém Estado/Cidade visíveis (placeholders).
-  // Se selecionar um país SEM estados, some Estado/Cidade e entra "Complemento".
+  // Se selecionar um país SEM estados, some Estado/Cidade e entra "Complemento / Cidade".
   const showStateAndCity = !form.countryIso2 || hasStates;
 
   function setField(name, value) {
@@ -158,13 +186,11 @@ export default function AddAlumniModal({
   const filteredSuggestions = useMemo(() => {
     const query = skillInput.trim().toLowerCase();
     if (!query) return [];
-    return ALL_SKILLS.filter(s =>
-      s.toLowerCase().includes(query) &&
-      !form.skills.includes(s)
-    ).slice(0, 6); // Limita a 6 sugestões no dropdown
+    return ALL_SKILLS.filter(
+      (s) => s.toLowerCase().includes(query) && !form.skills.includes(s),
+    ).slice(0, 6);
   }, [skillInput, form.skills]);
 
-  // Função única para adicionar habilidade
   const addSkill = (skill) => {
     const cleanSkill = skill.trim();
     if (cleanSkill && !form.skills.includes(cleanSkill)) {
@@ -176,13 +202,16 @@ export default function AddAlumniModal({
 
   const handleSkillKeyDown = (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Impede o envio do formulário
+      e.preventDefault();
       addSkill(skillInput);
     }
   };
 
   const removeSkill = (skillToRemove) => {
-    setField('skills', form.skills.filter(s => s !== skillToRemove));
+    setField(
+      'skills',
+      form.skills.filter((s) => s !== skillToRemove),
+    );
   };
 
   // reset ao abrir
@@ -192,20 +221,27 @@ export default function AddAlumniModal({
     setExtraErrors({});
     setIsSubmitting(false);
     setShowValidation(false);
+    setSkillInput('');
+    setShowSuggestions(false);
   }, [isOpen]);
 
-  // País mudou -> zera Estado e Cidade
+  // País mudou -> zera Estado, Cidade e Complemento
   useEffect(() => {
     if (!isOpen) return;
-    setForm((prev) => ({ ...prev, stateUf: '', city: '' }));
+    setForm((prev) => ({
+      ...prev,
+      stateUf: '',
+      city: '',
+      addressComplement: '',
+    }));
     setExtraErrors((prev) => ({ ...prev, stateUf: '', city: '' }));
   }, [isOpen, form.countryIso2]);
 
-  // Estado mudou -> zera Cidade (só se o país tiver estados)
+  // Estado mudou -> zera Cidade e Complemento (só se o país tiver estados)
   useEffect(() => {
     if (!isOpen) return;
     if (!hasStates) return;
-    setForm((prev) => ({ ...prev, city: '' }));
+    setForm((prev) => ({ ...prev, city: '', addressComplement: '' }));
     setExtraErrors((prev) => ({ ...prev, city: '' }));
   }, [isOpen, form.stateUf, hasStates]);
 
@@ -256,7 +292,6 @@ export default function AddAlumniModal({
     setExtraErrors((prev) => ({ ...prev, photoFile: '' }));
   }
 
-  // helper: seta erro detalhado embaixo + bolha "Corrija sua informação"
   function setCustomFieldError(ref, fieldName, message) {
     setExtraErrors((prev) => ({ ...prev, [fieldName]: message || '' }));
     if (ref?.current) {
@@ -265,7 +300,6 @@ export default function AddAlumniModal({
   }
 
   function runCustomValidations() {
-    // 1) nascimento coerente (<= 110 anos e não futuro)
     const birthMsg = validateBirthDate(
       form.birthDate,
       birthBounds.minIso,
@@ -273,11 +307,9 @@ export default function AddAlumniModal({
     );
     setCustomFieldError(birthInputRef, 'birthDate', birthMsg);
 
-    // 2) ano de formatura não pode ser futuro
     const gradMsg = validateGraduationYear(form.graduationYear);
     setCustomFieldError(gradYearInputRef, 'graduationYear', gradMsg);
 
-    // 3) telefone: opcional, mas se preenchido deve estar ok
     const phoneMsg = validatePhone(form.phone);
     setCustomFieldError(phoneInputRef, 'phone', phoneMsg);
   }
@@ -314,8 +346,13 @@ export default function AddAlumniModal({
           : null,
 
         country: form.countryIso2,
-        state: hasStates ? form.stateUf : null, // <- evita mandar estado em país sem estados
+        state: hasStates ? form.stateUf : null,
         city: form.city,
+
+        // ✅ opcional: só manda se tiver preenchido
+        ...(form.addressComplement.trim()
+          ? { addressComplement: form.addressComplement.trim() }
+          : {}),
 
         organization: form.organization.trim(),
         role: form.role,
@@ -326,6 +363,8 @@ export default function AddAlumniModal({
           : '',
 
         bio: form.bio.trim(),
+        skills: form.skills,
+
         photoFile: form.photoFile || null,
       };
 
@@ -573,7 +612,7 @@ export default function AddAlumniModal({
               }
             />
 
-            {/* Estado + Cidade (padrão). Se o país não tiver estados, entra Complemento. */}
+            {/* Estado + Cidade (padrão). Se o país não tiver estados, entra "Complemento / Cidade". */}
             {showStateAndCity ? (
               <>
                 <Field
@@ -593,9 +632,10 @@ export default function AddAlumniModal({
                         {!form.countryIso2
                           ? 'Primeiro selecione o país'
                           : loadingStates
-                            ? 'Carregando estados...'
-                            : 'Selecione o estado'}
+                          ? 'Carregando estados...'
+                          : 'Selecione o estado'}
                       </option>
+
                       {states.map((s) => (
                         <option key={`${s.code}-${s.name}`} value={s.code}>
                           {isBrazil ? `${s.code} - ${s.name}` : s.name}
@@ -605,38 +645,65 @@ export default function AddAlumniModal({
                   }
                 />
 
-                <Field
-                  label="Cidade"
-                  required
-                  input={
-                    <select
-                      name="city"
-                      value={form.city}
-                      onChange={(e) => setField('city', e.target.value)}
-                      required
-                      disabled={!form.stateUf || loadingCities}
-                      onInvalid={(e) => applyPtBrValidityMessage(e.target)}
-                      onInput={(e) => e.target.setCustomValidity('')}
-                    >
-                      <option value="">
-                        {!form.stateUf
-                          ? 'Primeiro selecione o estado'
-                          : loadingCities
+                {/* ✅ Só mostra Cidade quando EXISTE lista de cidades */}
+                {!needsAddressComplement ? (
+                  <Field
+                    label="Cidade"
+                    required
+                    input={
+                      <select
+                        name="city"
+                        value={form.city}
+                        onChange={(e) => setField('city', e.target.value)}
+                        required
+                        disabled={
+                          !form.countryIso2 || !form.stateUf || loadingCities
+                        }
+                        onInvalid={(e) => applyPtBrValidityMessage(e.target)}
+                        onInput={(e) => e.target.setCustomValidity('')}
+                      >
+                        <option value="">
+                          {!form.countryIso2
+                            ? 'Selecione o país'
+                            : !form.stateUf
+                            ? 'Selecione o estado'
+                            : loadingCities
                             ? 'Carregando cidades...'
                             : 'Selecione a cidade'}
-                      </option>
-                      {cities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
                         </option>
-                      ))}
-                    </select>
-                  }
-                />
+
+                        {cities.map((city) => (
+                          <option key={city} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                      </select>
+                    }
+                  />
+                ) : null}
+
+                {/* ✅ Se não tem cidades (Bangladesh etc.), mostra só complemento (opcional) */}
+                {needsAddressComplement ? (
+                  <Field
+                    label="Complemento do endereço"
+                    fullWidth
+                    input={
+                      <input
+                        name="addressComplement"
+                        value={form.addressComplement}
+                        onChange={(e) =>
+                          setField('addressComplement', e.target.value)
+                        }
+                        disabled={!form.countryIso2 || !form.stateUf}
+                        placeholder="Ex: bairro, região, vila, distrito..."
+                      />
+                    }
+                  />
+                ) : null}
               </>
             ) : (
               <Field
-                label="Complemento / Cidade"
+                label="Complemento do endereço"
                 fullWidth
                 input={
                   <input
@@ -744,7 +811,10 @@ export default function AddAlumniModal({
               fullWidth
               input={
                 <div className="skillsWrapper">
-                  <div className="inputRelative" style={{ position: 'relative' }}>
+                  <div
+                    className="inputRelative"
+                    style={{ position: 'relative' }}
+                  >
                     <input
                       type="text"
                       value={skillInput}
@@ -758,10 +828,9 @@ export default function AddAlumniModal({
                       className="skillInputMain"
                     />
 
-                    {/* Dropdown de sugestões flutuante */}
                     {showSuggestions && filteredSuggestions.length > 0 && (
                       <div className="suggestionsDropdown">
-                        {filteredSuggestions.map(sug => (
+                        {filteredSuggestions.map((sug) => (
                           <div
                             key={sug}
                             className="dropdownOption"
@@ -774,7 +843,6 @@ export default function AddAlumniModal({
                     )}
                   </div>
 
-                  {/* Área de Tags (Habilidades já selecionadas) */}
                   <div className="selectedSkillsArea">
                     {form.skills.map((skill) => (
                       <span key={skill} className="skillTag">

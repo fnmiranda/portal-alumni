@@ -41,9 +41,6 @@ export function useCountryLocations(isOpen, countryIso2, stateCode) {
 
   const hasStates = states.length > 0;
 
-  // “Pronto para cidades”:
-  // - se tiver estados, só depois de escolher estado
-  // - se NÃO tiver estados, basta escolher país
   const citiesReady = isOpen && !!countryIso2 && (!hasStates || !!stateCode);
 
   const cities = useMemo(() => {
@@ -55,7 +52,6 @@ export function useCountryLocations(isOpen, countryIso2, stateCode) {
 
     if (!countryIso2) return [];
 
-    // Se tem estados, cidades dependem do estado
     if (hasStates) {
       if (!stateCode) return [];
       return City.getCitiesOfState(countryIso2, stateCode)
@@ -64,7 +60,6 @@ export function useCountryLocations(isOpen, countryIso2, stateCode) {
         .sort((a, b) => a.localeCompare(b, 'pt-BR'));
     }
 
-    // Se NÃO tem estados, tenta por país (se a lib suportar)
     const getByCountry = City.getCitiesOfCountry?.bind(City);
     const list = getByCountry ? getByCountry(countryIso2) : [];
 
@@ -75,7 +70,11 @@ export function useCountryLocations(isOpen, countryIso2, stateCode) {
   }, [isOpen, isBrazil, countryIso2, stateCode, ibge.cities, hasStates]);
 
   const citiesAvailable = citiesReady && cities.length > 0;
-  const allowManualCity = citiesReady && cities.length === 0; // caso Guam etc.
+  const allowManualCity = citiesReady && cities.length === 0;
+
+  // ✅ Bangladesh etc: tem estado selecionado, mas a lib não tem cidades
+  const needsAddressComplement =
+    citiesReady && hasStates && !!stateCode && cities.length === 0;
 
   return {
     countries,
@@ -86,6 +85,7 @@ export function useCountryLocations(isOpen, countryIso2, stateCode) {
     citiesReady,
     citiesAvailable,
     allowManualCity,
+    needsAddressComplement,
     loadingStates: isBrazil ? ibge.loadingUfs : false,
     loadingCities: isBrazil ? ibge.loadingCities : false,
   };
