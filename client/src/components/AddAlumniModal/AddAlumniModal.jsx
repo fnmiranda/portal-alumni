@@ -133,8 +133,21 @@ export default function AddAlumniModal({
   // input date escondido pra abrir o calendário
   const hiddenDateRef = useRef(null);
 
-  const { countries, states, cities, loadingStates, loadingCities, isBrazil } =
-    useCountryLocations(isOpen, form.countryIso2, form.stateUf);
+  const {
+    countries,
+    states,
+    cities,
+    loadingStates,
+    loadingCities,
+    isBrazil,
+    hasStates,
+    allowManualCity,
+    citiesAvailable, // pode não ser usado aqui, mas deixei se quiser
+  } = useCountryLocations(isOpen, form.countryIso2, form.stateUf);
+
+  // Antes de selecionar país, mantém Estado/Cidade visíveis (placeholders).
+  // Se selecionar um país SEM estados, some Estado/Cidade e entra "Complemento".
+  const showStateAndCity = !form.countryIso2 || hasStates;
 
   function setField(name, value) {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -188,12 +201,13 @@ export default function AddAlumniModal({
     setExtraErrors((prev) => ({ ...prev, stateUf: '', city: '' }));
   }, [isOpen, form.countryIso2]);
 
-  // Estado mudou -> zera Cidade
+  // Estado mudou -> zera Cidade (só se o país tiver estados)
   useEffect(() => {
     if (!isOpen) return;
+    if (!hasStates) return;
     setForm((prev) => ({ ...prev, city: '' }));
     setExtraErrors((prev) => ({ ...prev, city: '' }));
-  }, [isOpen, form.stateUf]);
+  }, [isOpen, form.stateUf, hasStates]);
 
   // evita leak de preview de imagem (correto)
   useEffect(() => {
@@ -272,10 +286,8 @@ export default function AddAlumniModal({
     e.preventDefault();
     setShowValidation(true);
 
-    // roda nossas 3 validações
     runCustomValidations();
 
-    // dispara bolhas nativas (required/pattern + nossas custom)
     const formEl = formRef.current;
     if (formEl && !formEl.checkValidity()) {
       formEl.reportValidity();
@@ -288,8 +300,8 @@ export default function AddAlumniModal({
       setIsSubmitting(true);
 
       const payload = {
-        fullName: form.fullName.trim(), // vem do login
-        email: form.email.trim(), // vem do login (mock)
+        fullName: form.fullName.trim(),
+        email: form.email.trim(),
         preferredName: form.preferredName.trim(),
 
         birthDate: form.birthDate.trim()
@@ -302,7 +314,7 @@ export default function AddAlumniModal({
           : null,
 
         country: form.countryIso2,
-        state: form.stateUf, // BR = sigla, fora BR = isoCode do estado
+        state: hasStates ? form.stateUf : null, // <- evita mandar estado em país sem estados
         city: form.city,
 
         organization: form.organization.trim(),
@@ -414,6 +426,7 @@ export default function AddAlumniModal({
                 />
               }
             />
+
             <Field
               label="Como prefere ser chamado"
               input={
@@ -425,6 +438,7 @@ export default function AddAlumniModal({
                 />
               }
             />
+
             <Field
               label="Data de Aniversário"
               error={extraErrors.birthDate}
@@ -440,14 +454,13 @@ export default function AddAlumniModal({
                     placeholder="dd/mm/aaaa"
                     inputMode="numeric"
                     maxLength={10}
-                    pattern="^\d{2}\/\d{2}\/\d{4}$"
+                    pattern="^\\d{2}\\/\\d{2}\\/\\d{4}$"
                     onInvalid={(e) => applyPtBrValidityMessage(e.target)}
                     onInput={(e) => {
                       e.target.setCustomValidity('');
                       setExtraErrors((prev) => ({ ...prev, birthDate: '' }));
                     }}
                     onBlur={() => {
-                      // validação coerente também no blur
                       const msg = validateBirthDate(
                         form.birthDate,
                         birthBounds.minIso,
@@ -480,6 +493,7 @@ export default function AddAlumniModal({
                 </div>
               }
             />
+
             <Field
               label="Curso"
               required
@@ -501,6 +515,7 @@ export default function AddAlumniModal({
                 </select>
               }
             />
+
             <Field
               label="Ano de Formatura"
               required
@@ -516,14 +531,11 @@ export default function AddAlumniModal({
                   placeholder="ex: 2020"
                   inputMode="numeric"
                   required
-                  pattern="^\d{4}$"
+                  pattern="^[0-9]{4}$"
                   onInvalid={(e) => applyPtBrValidityMessage(e.target)}
                   onInput={(e) => {
                     e.target.setCustomValidity('');
-                    setExtraErrors((prev) => ({
-                      ...prev,
-                      graduationYear: '',
-                    }));
+                    setExtraErrors((prev) => ({ ...prev, graduationYear: '' }));
                   }}
                   onBlur={() => {
                     const msg = validateGraduationYear(form.graduationYear);
@@ -536,7 +548,8 @@ export default function AddAlumniModal({
                 />
               }
             />
-            {/* País -> Estado -> Cidade */}
+
+            {/* País */}
             <Field
               label="País"
               required
@@ -558,14 +571,12 @@ export default function AddAlumniModal({
                 </select>
               }
             />
-            <Field
-              label="Estado"
-              required
-              input={
-                <select
-                  name="stateUf"
-                  value={form.stateUf}
-                  onChange={(e) => setField('stateUf', e.target.value)}
+
+            {/* Estado + Cidade (padrão). Se o país não tiver estados, some e entra Complemento. */}
+            {showStateAndCity ? (
+              <>
+                <Field
+                  label="Estado"
                   required
                   disabled={!form.countryIso2 || loadingStates}
                   onInvalid={(e) => applyPtBrValidityMessage(e.target)}
@@ -627,6 +638,7 @@ export default function AddAlumniModal({
                 />
               }
             />
+
             <Field
               label="Cargo/Posição"
               input={
@@ -648,8 +660,10 @@ export default function AddAlumniModal({
                 </select>
               }
             />
+
             <Field
               label="Telefone (Nacional/Internacional)"
+              required
               hint="Opcional. Se internacional, inclua o DDI (+55, +1...)."
               error={extraErrors.phone}
               input={
@@ -659,6 +673,8 @@ export default function AddAlumniModal({
                   value={form.phone}
                   onChange={(e) => setField('phone', e.target.value)}
                   placeholder="ex: (11) 99999-9999 ou +55 11 99999-9999"
+                  required
+                  onInvalid={(e) => applyPtBrValidityMessage(e.target)}
                   onInput={(e) => {
                     e.target.setCustomValidity('');
                     setExtraErrors((prev) => ({ ...prev, phone: '' }));
@@ -670,6 +686,7 @@ export default function AddAlumniModal({
                 />
               }
             />
+
             <Field
               label="LinkedIn (nome de usuário)"
               fullWidth
@@ -686,6 +703,7 @@ export default function AddAlumniModal({
                 </div>
               }
             />
+
             <Field
               label="Biografia"
               fullWidth
