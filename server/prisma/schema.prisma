@@ -1,0 +1,28 @@
+// Configuração do Cliente Prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Conexão com o banco de dados (PostgreSQL no Supabase)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Aluno (Alumnus)
+model Alumnus {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  password        String
+  profilePicture  String?  // Preparado para o futuro sistema de fotos
+  country         String
+  state           String?
+  city            String?
+  course          String
+  graduationYear  Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("alumni")
+}
