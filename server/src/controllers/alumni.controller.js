@@ -9,24 +9,22 @@ const prisma = require('../database/prisma');
 // --- LISTAGEM (Tarefa do JA) ---
 const listAlumni = async (req, res, next) => {
   try {
-    // Pegamos os filtros validados da query (enviados pelo validateQuery no middleware)
     const { course, graduationYear, city } = req.query;
 
+    // Criamos um objeto de filtro dinâmico
+    const where = {};
+    if (course) where.course = course;
+    if (graduationYear) where.graduationYear = graduationYear;
+    if (city) where.city = { contains: city, mode: 'insensitive' }; // Busca flexível
+
     const alumni = await prisma.alumnus.findMany({
-      where: {
-        // TD vai implementar a lógica detalhada de filtros aqui
-        course: course,
-        graduationYear: graduationYear,
-        city: city,
-      },
-      orderBy: {
-        fullName: 'asc',
-      },
+      where,
+      orderBy: { fullName: 'asc' },
     });
 
     return res.status(200).json(alumni);
   } catch (error) {
-    next(error); // Envia para o error.middleware.js do Miranda
+    next(error);
   }
 };
 
