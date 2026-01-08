@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './AddAlumniModal.css';
+import { getMe } from '../../services/api';
 
 import { useCountryLocations } from '../hooks/useCountryLocations';
 
@@ -105,31 +106,23 @@ const SUGGESTIONS_BY_CATEGORY = {
   Idiomas: ['Inglês Fluente', 'Espanhol', 'Francês', 'Alemão'],
 };
 
-// MOCK vindo do "login"
-const MOCK_FULL_NAME = 'João da Silva Filho';
-const MOCK_EMAIL = 'joao.silva@gmail.com';
-
 const initialForm = {
-  fullName: MOCK_FULL_NAME,
+  fullName: '',
   preferredName: '',
   birthDate: '',
-
   course: '',
   graduationYear: '',
-
   countryIso2: '',
   stateUf: '',
   city: '',
-  addressComplement: '', // ✅ novo (opcional)
-
+  addressComplement: '',
   organization: '',
   role: '',
-  email: MOCK_EMAIL,
+  email: '',
   phone: '',
   linkedinUser: '',
   bio: '',
   skills: [],
-
   photoFile: null,
   photoPreviewUrl: '',
 };
@@ -213,16 +206,35 @@ export default function AddAlumniModal({
       form.skills.filter((s) => s !== skillToRemove),
     );
   };
-
+  //const do aniversario
+  const birthIsoDate = form.birthDate.trim()
+    ? brToIso(form.birthDate.trim())
+    : '';
+  const birthIsoDateTime = birthIsoDate
+    ? `${birthIsoDate}T00:00:00.000Z`
+    : null;
   // reset ao abrir
   useEffect(() => {
     if (!isOpen) return;
-    setForm(initialForm);
-    setExtraErrors({});
-    setIsSubmitting(false);
-    setShowValidation(false);
-    setSkillInput('');
-    setShowSuggestions(false);
+
+    (async () => {
+      try {
+        const res = await getMe();
+        const me = res.data; // axios
+
+        setForm((prev) => ({
+          ...prev,
+          fullName: me.fullName || '',
+          email: me.email || '',
+        }));
+      } catch (err) {
+        console.error(err);
+        setExtraErrors((prev) => ({
+          ...prev,
+          _form: 'Sessão expirada. Faça login novamente.',
+        }));
+      }
+    })();
   }, [isOpen]);
 
   // País mudou -> zera Estado, Cidade e Complemento
@@ -328,17 +340,32 @@ export default function AddAlumniModal({
       return;
     }
 
+    // ✅ evita fechar sem salvar se alguém esquecer de passar onSubmit
+    if (!onSubmit) {
+      setExtraErrors((prev) => ({
+        ...prev,
+        _form: 'Erro: ação de salvar não configurada (onSubmit ausente).',
+      }));
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+      setExtraErrors((prev) => ({ ...prev, _form: '' }));
+
+      const birthIsoDate = form.birthDate.trim()
+        ? brToIso(form.birthDate.trim())
+        : '';
+      const birthIsoDateTime = birthIsoDate
+        ? `${birthIsoDate}T00:00:00.000Z`
+        : null;
 
       const payload = {
         fullName: form.fullName.trim(),
         email: form.email.trim(),
         preferredName: form.preferredName.trim(),
 
-        birthDate: form.birthDate.trim()
-          ? brToIso(form.birthDate.trim())
-          : null,
+        birthDate: birthIsoDateTime,
 
         course: form.course,
         graduationYear: form.graduationYear
@@ -349,7 +376,6 @@ export default function AddAlumniModal({
         state: hasStates ? form.stateUf : null,
         city: form.city,
 
-        // ✅ opcional: só manda se tiver preenchido
         ...(form.addressComplement.trim()
           ? { addressComplement: form.addressComplement.trim() }
           : {}),
@@ -364,12 +390,19 @@ export default function AddAlumniModal({
 
         bio: form.bio.trim(),
         skills: form.skills,
-
-        photoFile: form.photoFile || null,
       };
 
-      await onSubmit?.(payload);
+      await onSubmit(payload);
+
       onClose?.();
+    } catch (err) {
+      // ✅ mostra erro vindo do backend (axios)
+      const backendMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Não foi possível salvar seu perfil.';
+
+      setExtraErrors((prev) => ({ ...prev, _form: backendMsg }));
     } finally {
       setIsSubmitting(false);
     }
@@ -391,6 +424,11 @@ export default function AddAlumniModal({
             ×
           </button>
         </header>
+        {extraErrors._form ? (
+          <div className="formError" role="alert">
+            {extraErrors._form}
+          </div>
+        ) : null}
 
         <form
           ref={formRef}
@@ -633,8 +671,8 @@ export default function AddAlumniModal({
                         {!form.countryIso2
                           ? 'Primeiro selecione o país'
                           : loadingStates
-                            ? 'Carregando estados...'
-                            : 'Selecione o estado'}
+                          ? 'Carregando estados...'
+                          : 'Selecione o estado'}
                       </option>
 
                       {states.map((s) => (
@@ -667,10 +705,10 @@ export default function AddAlumniModal({
                           {!form.countryIso2
                             ? 'Selecione o país'
                             : !form.stateUf
-                              ? 'Selecione o estado'
-                              : loadingCities
-                                ? 'Carregando cidades...'
-                                : 'Selecione a cidade'}
+                            ? 'Selecione o estado'
+                            : loadingCities
+                            ? 'Carregando cidades...'
+                            : 'Selecione a cidade'}
                         </option>
 
                         {cities.map((city) => (
