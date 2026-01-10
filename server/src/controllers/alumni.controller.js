@@ -14,7 +14,7 @@ const listAlumni = async (req, res, next) => {
     // Criamos um objeto de filtro dinâmico
     const where = {};
     if (course) where.course = course;
-    if (graduationYear) where.graduationYear = graduationYear;
+    if (graduationYear) where.graduationYear = Number(graduationYear);
     if (city) where.city = { contains: city, mode: 'insensitive' }; // Busca flexível
 
     const alumni = await prisma.alumnus.findMany({

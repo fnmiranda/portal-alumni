@@ -17,10 +17,20 @@ function toPublicUser(u) {
   };
 }
 
+const { z } = require('zod');
+
+// Schema de validação
+const registerSchema = z.object({
+  fullName: z.string().min(3, "Nome muito curto"),
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres")
+});
+
 async function register(req, res, next) {
   try {
+    const validatedData = registerSchema.parse(req.body);
     const User = getUserModel();
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password } = validatedData;
 
     const passwordHash = await bcrypt.hash(password, 10);
 
