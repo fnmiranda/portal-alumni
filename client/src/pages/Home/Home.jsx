@@ -230,7 +230,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           }}
         />
       )}
-
+      <div className={styles.footerDivider}></div>
       <Footer />
     </div>
   );
