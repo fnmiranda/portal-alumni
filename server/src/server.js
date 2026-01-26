@@ -10,7 +10,7 @@ const meRoutes = require('./routes/me.routes');
 const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5173', // Porta padrão do Vite
-  'https://portal-alumni-ruddy.vercel.app/'
+  'https://portal-alumni-ruddy.vercel.app'
 ];
 
 require('dotenv').config();
