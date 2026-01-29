@@ -12,28 +12,36 @@ import { getAlumni, upsertMyProfile, getMyProfile } from '../../services/api';
 // Estilos
 import styles from './Home.module.css';
 
+const PAGE_SIZE = 9;
+
 const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState([]);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // --- ESTADOS ---
+  // filtros / busca
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCurso, setSelectedCurso] = useState('');
   const [selectedAno, setSelectedAno] = useState('');
+
+  // UI
+  const [page, setPage] = useState(1);
   const [selectedAlumni, setSelectedAlumni] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
 
+  // -------------------------
+  // DATA
+  // -------------------------
   async function fetchAlumni(filters = {}) {
     setLoading(true);
     setErrorMessage(null);
+
     try {
       const response = await getAlumni(filters);
       setAlumni(response.data);
 
-      // Se for a primeira carga (sem filtros), guardamos para as opções de curso/ano
       if (Object.keys(filters).length === 0) {
         setFilterOptions(response.data);
       }
@@ -49,16 +57,15 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
     const query = {};
     if (selectedCurso) query.course = selectedCurso;
     if (selectedAno) query.graduationYear = selectedAno;
-    // Se quiser busca por nome no backend, adicione aqui (veja nota abaixo)
-    // if (searchTerm) query.fullName = searchTerm;
-
     fetchAlumni(query);
   }, [selectedCurso, selectedAno]);
 
-  //Botao virar EDITAR
-
+  // verifica se usuário já tem perfil
   useEffect(() => {
-    if (!isLoggedIn) return setHasProfile(false);
+    if (!isLoggedIn) {
+      setHasProfile(false);
+      return;
+    }
 
     getMyProfile()
       .then(() => setHasProfile(true))
@@ -66,8 +73,10 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
         if (err?.response?.status === 404) setHasProfile(false);
       });
   }, [isLoggedIn]);
-  // --- LÓGICA DE DADOS ---
 
+  // -------------------------
+  // FILTROS
+  // -------------------------
   const cursosUnicos = useMemo(() => {
     return [
       ...new Set(filterOptions.map((a) => a.course).filter(Boolean)),
@@ -79,10 +88,6 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
       ...new Set(filterOptions.map((a) => a.graduationYear).filter(Boolean)),
     ].sort((a, b) => b - a);
   }, [filterOptions]);
-
-  // --- HANDLERS ---
-  const handleOpenModal = (alumnus) => setSelectedAlumni(alumnus);
-  const handleCloseModal = () => setSelectedAlumni(null);
 
   const filteredAlumni = useMemo(() => {
     // Função auxiliar para remover acentos e deixar em minúsculo
@@ -100,6 +105,24 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
     });
   }, [alumni, searchTerm]);
 
+  // reset de página ao mudar filtros/busca
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedCurso, selectedAno]);
+
+  // -------------------------
+  // PAGINAÇÃO
+  // -------------------------
+  const totalPages = Math.max(1, Math.ceil(filteredAlumni.length / PAGE_SIZE));
+
+  const pageAlumni = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredAlumni.slice(start, start + PAGE_SIZE);
+  }, [filteredAlumni, page]);
+
+  // -------------------------
+  // RENDER
+  // -------------------------
   return (
     <div className={styles.wrapper}>
       <Header
@@ -126,22 +149,17 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           onAnoChange={setSelectedAno}
         />
 
-        <p className={styles.resultsInfo}>
-          {loading ? (
-            ''
-          ) : (
-            <>
-              Mostrando <strong>{filteredAlumni.length}</strong> de{' '}
-              {alumni.length} ex-alunos
-            </>
-          )}
-        </p>
+        {!loading && (
+          <p className={styles.resultsInfo}>
+            Mostrando <strong>{pageAlumni.length}</strong> de{' '}
+            {filteredAlumni.length} ex-alunos
+          </p>
+        )}
 
         {loading ? (
           <section>
             <div className={styles.loadingGrid}>
-              {/* Criamos 6 cards falsos enquanto carrega */}
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
                 <div key={n} className={styles.skeletonCard}></div>
               ))}
             </div>
@@ -150,15 +168,42 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
             </p>
           </section>
         ) : filteredAlumni.length > 0 ? (
-          <section className={styles.cardsGrid}>
-            {filteredAlumni.map((alumnus) => (
-              <AlumniCard
-                key={alumnus.id}
-                data={alumnus}
-                onClick={() => handleOpenModal(alumnus)}
-              />
-            ))}
-          </section>
+          <>
+            <section className={styles.cardsGrid}>
+              {pageAlumni.map((alumnus) => (
+                <AlumniCard
+                  key={alumnus.id}
+                  data={alumnus}
+                  onClick={() => setSelectedAlumni(alumnus)}
+                />
+              ))}
+            </section>
+
+            {totalPages > 1 && (
+              <div className={styles.pagination}>
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Anterior
+                </button>
+
+                <span className={styles.pageInfo}>
+                  Página <strong>{page}</strong> de{' '}
+                  <strong>{totalPages}</strong>
+                </span>
+
+                <button
+                  className={styles.pageBtn}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Próxima
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>
@@ -182,29 +227,25 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           </div>
         )}
       </main>
-      {/* Modal de Detalhes */}
+
       {selectedAlumni && (
-        <Modal data={selectedAlumni} onClose={handleCloseModal} />
+        <Modal data={selectedAlumni} onClose={() => setSelectedAlumni(null)} />
       )}
 
-      {/* Modal de Cadastro/Perfil */}
       {isAddModalOpen && (
         <AddAlumniModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onSubmit={async (payload) => {
-            // 1) salva/atualiza o perfil do usuário logado
             await upsertMyProfile(payload);
             setHasProfile(true);
-            // 2) fecha o modal
             setIsAddModalOpen(false);
-
-            // 3) recarrega a listagem pública (pra aparecer o card atualizado)
             await fetchAlumni();
           }}
         />
       )}
 
+      <div className={styles.footerDivider}></div>
       <Footer />
     </div>
   );
