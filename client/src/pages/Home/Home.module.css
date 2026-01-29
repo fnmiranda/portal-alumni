@@ -120,28 +120,65 @@
     opacity: 0.5;
   }
 }
+
+/* ------------------------------
+   PAGINAÇÃO (mantendo o último bloco)
+--------------------------------- */
 .pagination {
+  margin-top: 28px;
   display: flex;
-  justify-content: center;
+  gap: 22px;
   align-items: center;
-  gap: 12px;
-  margin: 18px 0 6px;
+  justify-content: center;
 }
 
+/* Botões */
 .pageBtn {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  min-width: 120px;
+  padding: 12px 22px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 600;
+
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+
   cursor: pointer;
+  transition: all 0.25s ease;
 }
 
+/* Hover */
+.pageBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+/* Disabled */
 .pageBtn:disabled {
-  opacity: 0.45;
+  opacity: 0.35;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* Texto central */
 .pageInfo {
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ------------------------------
+   DIVISOR DO FOOTER
+--------------------------------- */
+.footerDivider {
+  margin: 3rem 0 0; /* <-- corrigido */
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(204, 75, 0, 0.6),
+    transparent
+  );
 }
