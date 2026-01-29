@@ -1,14 +1,21 @@
 const { Router } = require('express');
-const router = Router();
+const multer = require('multer');
+const storage = require('../config/cloudinary');
+const upload = multer({ storage });
 
+const router = Router();
 const alumniController = require('../controllers/alumni.controller');
 const { createAlumnusSchema, queryAlumnusSchema } = require('../schemas/alumni.schemas');
 const { validateBody, validateQuery } = require('../middlewares/validate.middleware');
 
-// Rota de Listagem (JA)
 router.get('/', validateQuery(queryAlumnusSchema), alumniController.listAlumni);
 
-// Rota de Cadastro (TD)
-router.post('/', validateBody(createAlumnusSchema), alumniController.createAlumnus);
+// Adicionamos o middleware upload.single
+router.post(
+  '/',
+  upload.single('profilePicture'),
+  validateBody(createAlumnusSchema),
+  alumniController.createAlumnus
+);
 
 module.exports = router;

@@ -1,15 +1,14 @@
 const prisma = require('../database/prisma');
 
-// --- LISTAGEM (Tarefa do JA) ---
+// --- LISTAGEM ---
 const listAlumni = async (req, res, next) => {
   try {
     const { course, graduationYear, city } = req.query;
 
-    // Criamos um objeto de filtro dinâmico
     const where = {};
     if (course) where.course = course;
     if (graduationYear) where.graduationYear = Number(graduationYear);
-    if (city) where.city = { contains: city, mode: 'insensitive' }; // Busca flexível
+    if (city) where.city = { contains: city, mode: 'insensitive' };
 
     const alumni = await prisma.alumnus.findMany({
       where,
@@ -22,22 +21,24 @@ const listAlumni = async (req, res, next) => {
   }
 };
 
-// --- CADASTRO (Tarefa do TD) ---
+// --- CADASTRO ---
 const createAlumnus = async (req, res, next) => {
   try {
-    // Os dados já chegam validados pelo Zod através do middleware do Miranda
+    // req.body já foi validado pelo middleware de validação
     const data = req.body;
 
+    // Se houver arquivo, o Multer salvou no Cloudinary e colocou o link em req.file.path
+    if (req.file) {
+      data.profilePicture = req.file.path;
+    }
+
     const newAlumnus = await prisma.alumnus.create({
-      data: {
-        ...data,
-        // Caso queira tratar algum campo específico antes de salvar
-      },
+      data: data, // Não precisa de ...data se data já for o objeto
     });
 
     return res.status(201).json(newAlumnus);
   } catch (error) {
-    next(error); // Envia para o error.middleware.js do Miranda
+    next(error);
   }
 };
 

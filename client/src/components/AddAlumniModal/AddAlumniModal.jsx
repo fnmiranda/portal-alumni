@@ -81,7 +81,7 @@ const initialForm = {
   stateUf: '',
   city: '',
   addressComplement: '',
-  organization: '',
+  company: '',
   yearsOfExperience: '',
   role: '',
   email: '',
@@ -247,7 +247,7 @@ export default function AddAlumniModal({
               p.addressComp ??
               ''
             ).trim(),
-            organization: (p.organization ?? p.company ?? '').trim(),
+            company: (p.company ?? p.company ?? '').trim(),
 
             yearsOfExperience: p.yearsOfExperience || '',
 
@@ -399,69 +399,85 @@ export default function AddAlumniModal({
       setIsSubmitting(true);
       setExtraErrors((prev) => ({ ...prev, _form: '' }));
 
-      const birthIsoDate = form.birthDate.trim()
-        ? brToIso(form.birthDate.trim())
-        : '';
-      const birthIsoDateTime = birthIsoDate
-        ? `${birthIsoDate}T00:00:00.000Z`
-        : null;
+      const birthIsoDate = form.birthDate?.trim() ? brToIso(form.birthDate.trim()) : '';
+      const birthIsoDateTime = birthIsoDate ? `${birthIsoDate}T00:00:00.000Z` : null;
 
-      const payload = {
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        preferredName: form.preferredName.trim(),
-
-        birthDate: birthIsoDateTime,
-
-        course: form.course,
-        graduationYear: form.graduationYear
-          ? Number(form.graduationYear)
-          : null,
-
-        country: form.countryIso2,
-        state: hasStates ? form.stateUf : null,
-
-        // sempre manda city (manual ou select)
-        city: form.city ? String(form.city).trim() : '',
-
-        ...(form.addressComplement.trim()
-          ? { addressComplement: form.addressComplement.trim() }
-          : {}),
-
-        organization: form.organization.trim(),
-        yearsOfExperience: form.yearsOfExperience === '' ? null : Number(form.yearsOfExperience),
-        role: form.role,
-        phone: form.phone.trim(),
-
-        linkedinUrl: form.linkedinUser.trim() || '',
-
-        bio: form.bio.trim(),
-        skills: form.skills,
+      // Tratamento seguro para números
+      const safeNumber = (val) => {
+        if (val === '' || val === null || val === undefined) return null;
+        const num = Number(val);
+        return isNaN(num) ? null : num;
       };
 
-      await onSubmit(payload);
+      const formData = new FormData();
+
+      const payloadData = {
+        fullName: form.fullName?.trim(),
+        email: form.email?.trim(),
+        preferredName: form.preferredName?.trim(),
+        birthDate: birthIsoDateTime,
+        course: form.course, // Verifique se isso não é undefined no state
+        graduationYear: safeNumber(form.graduationYear),
+        country: form.countryIso2,
+        state: hasStates ? form.stateUf : null,
+        city: form.city ? String(form.city).trim() : '',
+        addressComp: form.addressComplement?.trim() || null,
+        linkedinUrl: form.linkedinUser?.trim() || '',
+        company: form.company?.trim(),
+        yearsOfExperience: safeNumber(form.yearsOfExperience),
+        role: form.role,
+        phone: form.phone?.trim(),
+        bio: form.bio?.trim(),
+        skills: Array.isArray(form.skills) ? form.skills.join(',') : '',
+      };
+
+      // Debug: Verificar o que está sendo montado ANTES de entrar no FormData
+      console.log("Payload Base:", payloadData);
+
+      Object.entries(payloadData).forEach(([key, value]) => {
+        // Verifica null, undefined E strings vazias se necessário (opcional)
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
+      });
+
+      if (form.photoFile) {
+        formData.append('profilePicture', form.photoFile);
+      }
+
+      // Debug: Iterar sobre o FormData final para garantir que não está vazio
+      console.log("--- Enviando FormData ---");
+      let hasEntries = false;
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+        hasEntries = true;
+      }
+
+      if (!hasEntries) {
+        console.warn("⚠️ O FormData está vazio! Verifique o estado 'form'.");
+      }
+
+      // AQUI ESTÁ O PULO DO GATO:
+      // Certifique-se que onSubmit está repassando esse argumento para a API
+      await onSubmit(formData);
+
       onClose?.();
     } catch (err) {
+      console.error("Erro no submit:", err);
       const backendMsg =
         err?.response?.data?.message ||
         err?.message ||
         'Não foi possível salvar seu perfil.';
-      const hasFieldErrors =
-        extraErrors.birthDate ||
-        extraErrors.graduationYear ||
-        extraErrors.phone ||
-        extraErrors.linkedinUser ||
-        extraErrors.photoFile;
 
+      // ... resto da sua lógica de erro
       setExtraErrors((prev) => ({
         ...prev,
-        _form: hasFieldErrors ? '' : backendMsg,
+        _form: backendMsg,
       }));
     } finally {
       setIsSubmitting(false);
     }
   }
-
   if (!isOpen) return null;
 
   return (
@@ -846,9 +862,9 @@ export default function AddAlumniModal({
               label="Empresa/Instituição"
               input={
                 <input
-                  name="organization"
-                  value={form.organization}
-                  onChange={(e) => setField('organization', e.target.value)}
+                  name="company"
+                  value={form.company}
+                  onChange={(e) => setField('company', e.target.value)}
                   placeholder="Sua empresa/instituição actual"
                 />
               }

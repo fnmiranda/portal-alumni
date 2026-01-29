@@ -1,19 +1,18 @@
 const prisma = require('../database/prisma');
+// 1. IMPORTANTE: Importamos o cloudinary que configuramos no passo anterior
+const { cloudinary } = require('../config/cloudinary');
 
 function getUserModel() {
   return prisma.user || prisma.users;
 }
 
 function getAlumnusModel() {
-  // normalmente é prisma.alumnus (model "Alumnus"), mas deixo fallback
   return prisma.alumnus || prisma.alumni;
 }
 
 async function me(req, res, next) {
   try {
     const User = getUserModel();
-
-    // ✅ sem select (pra não quebrar com campo inexistente)
     const u = await User.findUnique({ where: { id: req.user.id } });
 
     if (!u) return res.status(404).json({ message: 'Usuário não encontrado.' });
@@ -30,6 +29,14 @@ async function me(req, res, next) {
 
 async function upsertProfile(req, res, next) {
   try {
+    // --- DEBUG: VERIFICANDO O QUE CHEGA DO FRONTEND ---
+    console.log('--- DEBUG CONTROLLER (Memory Storage) ---');
+    console.log('1. Texto (Body):', req.body);
+    // Agora verificamos se existe o buffer, não o path
+    console.log('2. Arquivo:', req.file ? `Recebido (Tamanho: ${req.file.size} bytes)` : 'NENHUMA IMAGEM');
+    console.log('------------------------');
+    // --------------------------------------------------
+
     const User = getUserModel();
     const Alumnus = getAlumnusModel();
 
@@ -37,19 +44,41 @@ async function upsertProfile(req, res, next) {
     if (!u) return res.status(404).json({ message: 'Usuário não encontrado.' });
 
     const fullName = u.fullName ?? u.full_name;
-
-    // payload vindo do front (AddAlumniModal)
     const data = req.body;
 
-    // mapeia campos do front -> campos do model Alumnus (teu schema antigo)
+    // --- LÓGICA DE UPLOAD MANUAL PARA O CLOUDINARY ---
+    let profilePictureUrl = null;
+
+    if (req.file) {
+      try {
+        console.log('📤 Iniciando upload manual da imagem para o Cloudinary...');
+
+        // Converte o Buffer (RAM) para Base64 string
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+        // Envia para o Cloudinary
+        const result = await cloudinary.uploader.upload(dataURI, {
+          folder: 'alumni_profiles',
+          resource_type: 'auto',
+        });
+
+        console.log('✅ Upload concluído com sucesso:', result.secure_url);
+        profilePictureUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('❌ Erro ao enviar para o Cloudinary:', uploadError);
+        // Opcional: retornar erro para o usuário ou continuar sem a foto
+        throw new Error('Falha ao processar a imagem do perfil.');
+      }
+    }
+
+    // mapeia campos do front -> campos do model Alumnus
     const mapped = {
-      // mantém consistência com a conta (e evita quebrar colunas NOT NULL/unique antigas)
       fullName,
       email: u.email,
-
       preferredName: data.preferredName || null,
       phone: data.phone,
-      birthDate: new Date(data.birthDate),
+      birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
 
       country: data.country,
       state: data.state || null,
@@ -59,13 +88,17 @@ async function upsertProfile(req, res, next) {
       course: data.course,
       graduationYear: data.graduationYear,
 
-      company: data.organization || null,
+      company: data.company || null,
       role: data.role || null,
       yearsOfExperience: data.yearsOfExperience ?? null,
 
       linkedinUrl: data.linkedinUrl || null,
       bio: data.bio || null,
       skills: Array.isArray(data.skills) ? data.skills : [],
+
+      // Se profilePictureUrl foi preenchido pelo upload acima, salva no banco.
+      // Caso contrário, mantém o que já estava no banco (não sobrescreve com null).
+      ...(profilePictureUrl && { profilePicture: profilePictureUrl }),
     };
 
     const tryUpsert = async (key) => {
@@ -78,11 +111,9 @@ async function upsertProfile(req, res, next) {
 
     let profile;
     try {
-      // tenta com camelCase (se o Prisma tiver criado userId)
       profile = await tryUpsert('userId');
     } catch (e) {
       const msg = String(e?.message || '');
-      // fallback pra snake_case (se o Prisma tiver criado user_id)
       if (msg.includes('Unknown argument') || msg.includes('Unknown arg')) {
         profile = await tryUpsert('user_id');
       } else {
@@ -92,31 +123,31 @@ async function upsertProfile(req, res, next) {
 
     return res.status(200).json({
       ...profile,
-      organization: profile.company ?? profile.organization ?? null,
+      company: profile.company ?? profile.company ?? null,
       addressComplement:
         profile.addressComp ?? profile.addressComplement ?? null,
     });
   } catch (err) {
+    console.error('ERRO NO UPSERT:', err);
     next(err);
   }
 }
+
 async function getMyProfile(req, res, next) {
   try {
     const userId = req.userId || req.user?.id || req.user?.sub;
-
     let profile = null;
 
-    // dependendo do nome do campo no Prisma, tenta userId ou user_id
     try {
       profile = await prisma.alumnus.findUnique({ where: { userId } });
-    } catch (_) {}
+    } catch (_) { }
 
     if (!profile) {
       try {
         profile = await prisma.alumnus.findUnique({
           where: { user_id: userId },
         });
-      } catch (_) {}
+      } catch (_) { }
     }
 
     if (!profile) {
@@ -125,7 +156,7 @@ async function getMyProfile(req, res, next) {
 
     return res.status(200).json({
       ...profile,
-      organization: profile.company ?? profile.organization ?? null,
+      company: profile.company ?? profile.company ?? null,
       addressComplement:
         profile.addressComp ?? profile.addressComplement ?? null,
     });
@@ -133,4 +164,5 @@ async function getMyProfile(req, res, next) {
     next(err);
   }
 }
+
 module.exports = { me, upsertProfile, getMyProfile };

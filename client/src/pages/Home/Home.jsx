@@ -14,6 +14,15 @@ import styles from './Home.module.css';
 
 const PAGE_SIZE = 9;
 
+// 1. OTIMIZAÇÃO: Função movida para fora do componente
+const normalize = (str) => {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+};
+
 const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,17 +99,11 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   }, [filterOptions]);
 
   const filteredAlumni = useMemo(() => {
-    // Função auxiliar para remover acentos e deixar em minúsculo
-    const normalize = (str) =>
-      str
-        .normalize('NFD')                     // Decompõe os caracteres (é -> e + ´)
-        .replace(/[\u0300-\u036f]/g, "")      // Remove os acentos (os sinais diacríticos)
-        .toLowerCase();
-
+    // A função normalize agora é externa
     const search = normalize(searchTerm);
 
     return alumni.filter((alumnus) => {
-      const name = normalize(alumnus.fullName || '');
+      const name = normalize(alumnus.fullName);
       return name.includes(search);
     });
   }, [alumni, searchTerm]);
@@ -159,7 +162,8 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
         {loading ? (
           <section>
             <div className={styles.loadingGrid}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+              {/* Ajuste: Usa o PAGE_SIZE dinamicamente */}
+              {Array.from({ length: PAGE_SIZE }).map((_, n) => (
                 <div key={n} className={styles.skeletonCard}></div>
               ))}
             </div>
@@ -237,10 +241,30 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onSubmit={async (payload) => {
-            await upsertMyProfile(payload);
-            setHasProfile(true);
-            setIsAddModalOpen(false);
-            await fetchAlumni();
+            // 👇 ADICIONE ESTES LOGS PARA DEBUG
+            console.log("📍 [Home.jsx] Recebido do Modal:", payload);
+            console.log("📍 [Home.jsx] É FormData?", payload instanceof FormData);
+
+            // Se for FormData, vamos espiar dentro (só pra garantir)
+            if (payload instanceof FormData) {
+              for (let pair of payload.entries()) {
+                console.log(`📦 Conteúdo: ${pair[0]} = ${pair[1]}`);
+              }
+            }
+
+            try {
+              await upsertMyProfile(payload);
+              setHasProfile(true);
+              setIsAddModalOpen(false);
+
+              const query = {};
+              if (selectedCurso) query.course = selectedCurso;
+              if (selectedAno) query.graduationYear = selectedAno;
+              await fetchAlumni(query);
+            } catch (error) {
+              console.error("Erro ao salvar perfil:", error);
+              setErrorMessage("Erro ao salvar. Verifique o console.");
+            }
           }}
         />
       )}
