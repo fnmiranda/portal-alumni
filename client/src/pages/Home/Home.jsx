@@ -241,17 +241,6 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onSubmit={async (payload) => {
-            // 👇 ADICIONE ESTES LOGS PARA DEBUG
-            console.log("📍 [Home.jsx] Recebido do Modal:", payload);
-            console.log("📍 [Home.jsx] É FormData?", payload instanceof FormData);
-
-            // Se for FormData, vamos espiar dentro (só pra garantir)
-            if (payload instanceof FormData) {
-              for (let pair of payload.entries()) {
-                console.log(`📦 Conteúdo: ${pair[0]} = ${pair[1]}`);
-              }
-            }
-
             try {
               await upsertMyProfile(payload);
               setHasProfile(true);

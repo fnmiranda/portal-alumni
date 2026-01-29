@@ -47,8 +47,6 @@ async function upsertProfile(req, res, next) {
     // CASO 1: Usuário enviou uma nova foto
     if (req.file) {
       try {
-        console.log('📤 Iniciando upload manual da imagem para o Cloudinary...');
-
         // Converte o Buffer (RAM) para Base64 string
         const b64 = Buffer.from(req.file.buffer).toString('base64');
         const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
@@ -59,17 +57,13 @@ async function upsertProfile(req, res, next) {
           resource_type: 'auto',
         });
 
-        console.log('✅ Upload concluído com sucesso:', result.secure_url);
         profilePictureUrl = result.secure_url;
       } catch (uploadError) {
-        console.error('❌ Erro ao enviar para o Cloudinary:', uploadError);
         throw new Error('Falha ao processar a imagem do perfil.');
       }
     }
     // CASO 2: Usuário pediu para remover a foto (e não enviou uma nova)
-    // O FormData envia booleanos como string "true"
     else if (data.removePhoto === 'true' || data.removePhoto === true) {
-      console.log('🗑️ Usuário solicitou remoção da foto.');
       profilePictureUrl = null;
     }
 
@@ -131,7 +125,6 @@ async function upsertProfile(req, res, next) {
         profile.addressComp ?? profile.addressComplement ?? null,
     });
   } catch (err) {
-    console.error('ERRO NO UPSERT:', err);
     next(err);
   }
 }
