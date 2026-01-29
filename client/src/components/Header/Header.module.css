@@ -20,7 +20,6 @@
 .titleLogo {
   display: flex;
   justify-content: center;
-
   align-items: flex-start;
   gap: 1rem;
   color: #ffffff; /* Texto branco para contraste */
@@ -51,7 +50,7 @@
   background-color: #cc4b00;
   color: white;
   border: none;
-  padding: 0.7rem 0.7rem;
+  padding: 0.7rem 0.9rem 0.7rem 0.7rem;
   border-radius: 20px;
   font-weight: bold;
   display: flex;
@@ -149,5 +148,8 @@
   .titleLogo img {
     width: 40px;
     height: 50px;
+  }
+  .logoWrapper {
+    transform: translateY(0%);
   }
 }
