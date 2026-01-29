@@ -269,11 +269,11 @@ export default function AddAlumniModal({
             skills: Array.isArray(p.skills)
               ? p.skills
               : typeof p.skills === 'string' && p.skills.trim()
-              ? p.skills
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-              : [],
+                ? p.skills
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : [],
           }));
         } catch (err) {
           if (err?.response?.status === 404) {
@@ -352,6 +352,17 @@ export default function AddAlumniModal({
       ref.current.setCustomValidity(message ? 'Corrija sua informação' : '');
     }
   }
+  // função pra validação do linkedin
+  function validateLinkedinUrl(value) {
+    if (!value.trim()) return ''; // campo opcional
+
+    const isValid =
+      /^https?:\/\/(www\.)?linkedin\.com\/(in|company|school)\/[^\s/]+/i.test(
+        value.trim(),
+      );
+
+    return isValid ? '' : 'Insira um link válido do LinkedIn.';
+  }
 
   function runCustomValidations() {
     const birthMsg = validateBirthDate(
@@ -366,6 +377,9 @@ export default function AddAlumniModal({
 
     const phoneMsg = validatePhone(form.phone);
     setCustomFieldError(phoneInputRef, 'phone', phoneMsg);
+    // NOVO pra verificar o LinkedIn
+    const linkedinMsg = validateLinkedinUrl(form.linkedinUser);
+    setExtraErrors((prev) => ({ ...prev, linkedinUser: linkedinMsg }));
   }
 
   async function handleSubmit(e) {
@@ -427,9 +441,7 @@ export default function AddAlumniModal({
         role: form.role,
         phone: form.phone.trim(),
 
-        linkedinUrl: form.linkedinUser.trim()
-          ? `https://linkedin.com/in/${form.linkedinUser.trim()}`
-          : '',
+        linkedinUrl: form.linkedinUser.trim() || '',
 
         bio: form.bio.trim(),
         skills: form.skills,
@@ -442,8 +454,17 @@ export default function AddAlumniModal({
         err?.response?.data?.message ||
         err?.message ||
         'Não foi possível salvar seu perfil.';
+      const hasFieldErrors =
+        extraErrors.birthDate ||
+        extraErrors.graduationYear ||
+        extraErrors.phone ||
+        extraErrors.linkedinUser ||
+        extraErrors.photoFile;
 
-      setExtraErrors((prev) => ({ ...prev, _form: backendMsg }));
+      setExtraErrors((prev) => ({
+        ...prev,
+        _form: hasFieldErrors ? '' : backendMsg,
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -712,8 +733,8 @@ export default function AddAlumniModal({
                         {!form.countryIso2
                           ? 'Primeiro selecione o país'
                           : loadingStates
-                          ? 'Carregando estados...'
-                          : 'Selecione o estado'}
+                            ? 'Carregando estados...'
+                            : 'Selecione o estado'}
                       </option>
 
                       {states.map((s) => (
@@ -746,10 +767,10 @@ export default function AddAlumniModal({
                           {!form.countryIso2
                             ? 'Selecione o país'
                             : !form.stateUf
-                            ? 'Selecione o estado'
-                            : loadingCities
-                            ? 'Carregando cidades...'
-                            : 'Selecione a cidade'}
+                              ? 'Selecione o estado'
+                              : loadingCities
+                                ? 'Carregando cidades...'
+                                : 'Selecione a cidade'}
                         </option>
 
                         {/* fallback se a cidade salva não estiver na lista */}
@@ -890,16 +911,24 @@ export default function AddAlumniModal({
             />
 
             <Field
-              label="LinkedIn (nome de usuário)"
+              label="LinkedIn (Link do perfil)"
               fullWidth
+              error={extraErrors.linkedinUser}
               input={
                 <div className="linkedinWrap">
-                  <span className="linkedinPrefix">linkedin.com/in/</span>
+                  <span className="linkedinPrefix">Link:</span>
                   <input
                     name="linkedinUser"
                     value={form.linkedinUser}
                     onChange={(e) => setField('linkedinUser', e.target.value)}
-                    placeholder="seu-nome-de-usuario"
+                    onBlur={() => {
+                      const msg = validateLinkedinUrl(form.linkedinUser);
+                      setExtraErrors((prev) => ({
+                        ...prev,
+                        linkedinUser: msg,
+                      }));
+                    }}
+                    placeholder="https://www.linkedin.com/in/seu-perfil"
                     className="linkedinInput"
                   />
                 </div>
@@ -995,8 +1024,8 @@ export default function AddAlumniModal({
                   ? 'Salvando...'
                   : 'Adicionando...'
                 : isEditing
-                ? 'Salvar Alterações'
-                : 'Adicionar Perfil'}
+                  ? 'Salvar Alterações'
+                  : 'Adicionar Perfil'}
             </button>
           </footer>
         </form>
