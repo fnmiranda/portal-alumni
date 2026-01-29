@@ -31,7 +31,7 @@ const Header = ({
         </h1>
 
         <div className={styles.actions}>
-          {!isLoggedIn ? (
+          {isLoggedIn ? (
             <>
               <button className={styles.addBtn} onClick={onAddClick}>
                 <Plus size={18} /> {addLabel}
