@@ -12,10 +12,13 @@
   flex: 1; /* Faz o conteúdo crescer para empurrar o footer */
 }
 
+
+
 .cardsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
+  justify-items: center;
 }
 
 .resultsInfo {
@@ -126,6 +129,7 @@
 --------------------------------- */
 .pagination {
   margin-top: 28px;
+  font-family: 'Open Sans',Arial,sans-serif;
   display: flex;
   gap: 22px;
   align-items: center;
@@ -136,12 +140,12 @@
 .pageBtn {
   min-width: 120px;
   padding: 12px 22px;
-  border-radius: 18px;
-  font-size: 16px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: 600;
 
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid #b5a375;;
+  background: rgba(28, 33, 67, 0.1);
   color: #ffffff;
 
   cursor: pointer;
@@ -150,7 +154,11 @@
 
 /* Hover */
 .pageBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.22);
+  /* background: rgba(255, 255, 255, 0.22); */
+  border: 0.1px solid #ffffff;
+
+    
+  background: rgba(250, 105, 19, 0.6);
   transform: translateY(-1px);
 }
 
@@ -163,9 +171,14 @@
 
 /* Texto central */
 .pageInfo {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
+}
+
+.pageNumber{
+  color: rgb(255, 255, 255);
+  font-size: 18px;
 }
 
 /* ------------------------------
@@ -181,4 +194,18 @@
     rgba(204, 75, 0, 0.6),
     transparent
   );
+}
+
+@media(max-width:760px){
+  .pageInfo{
+    font-size: 12px;
+  }
+  .pageNumber{
+    font-size: 15px;
+  }
+  .pageBtn{
+    font-size: 14px;
+    min-width: 106px;
+    padding: 12px 10px;
+  }
 }

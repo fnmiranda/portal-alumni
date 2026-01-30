@@ -117,7 +117,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   // PAGINAÇÃO
   // -------------------------
   const totalPages = Math.max(1, Math.ceil(filteredAlumni.length / PAGE_SIZE));
-
+  // const totalPages = 3;
   const pageAlumni = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
     return filteredAlumni.slice(start, start + PAGE_SIZE);
@@ -183,6 +183,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
               ))}
             </section>
 
+
             {totalPages > 1 && (
               <div className={styles.pagination}>
                 <button
@@ -194,8 +195,8 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
                 </button>
 
                 <span className={styles.pageInfo}>
-                  Página <strong>{page}</strong> de{' '}
-                  <strong>{totalPages}</strong>
+                  Página <strong className={styles.pageNumber}>{page}</strong> de{' '}
+                  <strong className={styles.pageNumber}>{totalPages}</strong>
                 </span>
 
                 <button
