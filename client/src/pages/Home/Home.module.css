@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+
 }
 
 .container {
@@ -10,6 +11,7 @@
   margin: 0 auto;
   padding: 2rem 0;
   flex: 1; /* Faz o conteúdo crescer para empurrar o footer */
+  
 }
 
 
@@ -158,7 +160,7 @@
   border: 0.1px solid #ffffff;
 
     
-  background: rgba(250, 105, 19, 0.6);
+  background: #e65500;
   transform: translateY(-1px);
 }
 
