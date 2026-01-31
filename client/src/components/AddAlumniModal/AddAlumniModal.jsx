@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './AddAlumniModal.css';
+import { CirclePlus, Trash2, Save, ImageUp, Calendar, CalendarDays} from 'lucide-react'
+
 import { getMe, getMyProfile } from '../../services/api';
 
 import { useCountryLocations } from '../hooks/useCountryLocations';
@@ -503,6 +505,16 @@ export default function AddAlumniModal({
         >
           {/* FOTO */}
           <section className="photoSection">
+              {form.photoPreviewUrl && (
+                <div 
+                  className="photoSectionBackground"
+                  style={{ 
+                    backgroundImage: `url('${form.photoPreviewUrl}')`,
+                    opacity: 0.2 // SÓ na imagem de fundo
+                  }}
+                />
+              )}
+              
             {/* 1. Esquerda: Círculo da Foto */}
             <div className="photoCircle">
               {form.photoPreviewUrl ? (
@@ -521,26 +533,28 @@ export default function AddAlumniModal({
             <div className="photoActions">
 
               {/* Botão de Upload (Label atua como botão) */}
-              <label className="photoButton">
-                {form.photoPreviewUrl ? 'Trocar Foto' : 'Adicionar Foto'}
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  className="fileInput" // A classe que esconde o input real
-                  onChange={handlePhotoChange}
-                />
-              </label>
+              <div className='photoButtons'>
+                <label className="photoButton">
+                  {form.photoPreviewUrl ? <span>Trocar Foto <ImageUp size={18}/></span>: <span>Adicionar Foto <CirclePlus size={18}/></span>}
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    className="fileInput" // A classe que esconde o input real
+                    onChange={handlePhotoChange}
+                  />
+                </label>
 
-              {/* Botão de Remover */}
-              {form.photoPreviewUrl && (
-                <button
-                  type="button"
-                  onClick={handleRemovePhoto}
-                  className="removeButton"
-                >
-                  Remover foto
-                </button>
-              )}
+                {/* Botão de Remover */}
+                {form.photoPreviewUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="removeButton"
+                  >
+                    <span> Remover Foto <Trash2 size={18}/></span>
+                  </button>
+                )}
+              </div>
 
               {/* Mensagem de Erro */}
               {extraErrors?.photoFile && (
@@ -629,7 +643,7 @@ export default function AddAlumniModal({
                     onClick={openCalendar}
                     aria-label="Abrir calendário"
                   >
-                    📅
+                    <CalendarDays/>
                   </button>
 
                   <input
@@ -1051,8 +1065,9 @@ export default function AddAlumniModal({
                   ? 'Salvando...'
                   : 'Adicionando...'
                 : isEditing
-                  ? 'Salvar Alterações'
-                  : 'Adicionar Perfil'}
+                  ? <span> Salvar Alterações <Save size={18}/></span>
+                  : <span> Adicionar Perfil <Save size={18}/></span>}
+                  
             </button>
           </footer>
         </form>

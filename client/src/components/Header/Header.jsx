@@ -3,8 +3,6 @@ import { Plus, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
 
-import localImage from '/logo.webp';
-
 const Header = ({
   onAddClick,
   isLoggedIn,
@@ -51,7 +49,6 @@ const Header = ({
         </div>
       </div>
       <div className={styles.subtitle}>
-        <div></div>
         <strong>ENCONTRE EX-ALUNOS DO IME</strong>
       </div>
     </header>

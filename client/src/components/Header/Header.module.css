@@ -1,16 +1,18 @@
 .header {
-  background-color: #121a36;
+  background: transparent;
   position: relative;
-  /* padding: 1rem 2rem; */
-  /* border-bottom: 2px solid #cc4b00;  */
   width: 100%;
+  background-image: linear-gradient(
+    to bottom,
+    #121a36 20%,
+    rgba(250, 105, 19, 0.6) 100%
+  );
 }
 
 .headerContent {
-  background-color: #121a36;
   padding: 1rem 2rem;
   height: 5rem;
-  max-width: 1540px;
+  max-width: 1520px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -22,7 +24,7 @@
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;
-  color: #ffffff; /* Texto branco para contraste */
+  color: #b5a375;
   cursor: pointer;
   margin: 0;
   letter-spacing: -1px;
@@ -38,6 +40,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 120px;
 }
 
 .loginBtn:hover {
@@ -58,6 +61,9 @@
   gap: 0.2rem;
   cursor: pointer;
   transition: transform 0.2s;
+  width: 160px;
+  min-width: 130px;
+  justify-content: center;
 }
 
 .addBtn:hover {
@@ -72,7 +78,8 @@
 }
 
 .logoutBtn {
-  background-color: transparent;
+  /* background-color: transparent; */
+  background-color: #121a36;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 0.7rem 0.7rem;
@@ -83,11 +90,15 @@
   gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
+  width: 160px;
+  min-width: 90px;
+  justify-content: center;
 }
 
 .logoutBtn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
+  transform: scale(1.05);
+  background-color: transparent;
+  border-color: #cc4b0064;
 }
 
 .subtitle {
@@ -95,18 +106,10 @@
 
   padding: 10px 0;
   color: #b5a375;
-  /* color: #ffffff; */
   font-size: 40px;
   font-family: 'Open Sans', Arial, sans-serif;
   font-weight: 500;
   line-height: 1.55;
-  background-position: center center;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(28, 33, 67, 0.1),
-    rgba(250, 105, 19, 0.6)
-  );
-  background-position: 2%;
   justify-content: center;
 }
 
@@ -114,7 +117,7 @@
   margin-top: 0.6rem;
   /* font-family: 'Open Sans', Arial, sans-serif; */
   font-size: 1.6rem;
-  font-weight: 400;
+  font-weight: 800;
 }
 
 .logoWrapper {
@@ -133,7 +136,7 @@
   }
   .titleLogo img {
     width: 70px;
-    height: 60px;
+    height: 80px;
     margin-right: 8px;
   }
 }
@@ -146,10 +149,23 @@
     font-size: 1.4rem;
   }
   .titleLogo img {
-    width: 40px;
-    height: 50px;
+    width: 56px;
+    height: 70px;
   }
   .logoWrapper {
     transform: translateY(0%);
+  }
+}
+
+@media (max-width: 500px) {
+  .addBtn {
+    width: 150px;
+  }
+  .logoutBtn {
+    width: 90px;
+  }
+  .titleLogo img {
+    width: 50px;
+    height: 60px;
   }
 }

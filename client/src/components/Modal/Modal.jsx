@@ -14,7 +14,6 @@ const Modal = ({ data, onClose }) => {
         <button className={styles.closeBtn} onClick={onClose}>
           <X size={24} />
         </button>
-
         {/* Cabeçalho do Perfil */}
         <header className={styles.header}>
           <img src={avatarUrl} alt={data.fullName} className={styles.avatar} />
@@ -30,7 +29,7 @@ const Modal = ({ data, onClose }) => {
           {/* Coluna Esquerda */}
           <div className={styles.mainInfo}>
             <section>
-              <h3><User size={18} /> Informações Acadêmicas</h3>
+              <h3> Informações Acadêmicas</h3>
               <ul>
                 <li>
                   <GraduationCap  size={16} /> {data.course} • Turma de {data.graduationYear}

@@ -21,14 +21,25 @@
   overflow-y: auto;
 }
 
+.mainInfo{
+    font-size: 16px;
+  }
+
 .closeBtn {
   position: absolute;
+  border-radius: 50%;
   top: 1.5rem;
   right: 1.5rem;
   background: none;
   border: none;
   cursor: pointer;
   color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  color: #111;
+  transform: rotate(90deg);
 }
 
 .header {
@@ -46,8 +57,16 @@
   object-fit: cover;
 }
 
-.titleInfo h1 { font-size: 2rem; margin: 0; color: #0d1425; }
-.headline { color: #d4a017; font-weight: 600; margin-top: 5px; }
+.titleInfo h1 {
+  font-size: 2rem;
+  margin: 0;
+  color: #0d1425;
+}
+.headline {
+  color: #d4a017;
+  font-weight: 600;
+  margin-top: 5px;
+}
 
 .content {
   display: grid;
@@ -64,7 +83,10 @@ h3 {
   color: #1e293b;
 }
 
-ul { list-style: none; padding: 0; }
+ul {
+  list-style: none;
+  padding: 0;
+}
 ul li {
   display: flex;
   align-items: flex-start;
@@ -78,9 +100,17 @@ ul li svg {
   margin-top: 0.2rem;
 }
 
-.description { color: #475569; line-height: 1.6; }
+.description {
+  color: #475569;
+  line-height: 1.6;
+  text-align: justify;
+}
 
-.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 .tag {
   background: #f1f5f9;
   padding: 0.4rem 0.8rem;
@@ -107,11 +137,48 @@ ul li svg {
   color: #64748b;
 }
 
-.contactItem span { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
-.contactItem p { margin: 0; font-weight: 500; font-size: 0.95rem; }
+.contactItem span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.contactItem p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.contactItem a {
+  color: #0070f3;
+  text-decoration: none;
+  font-weight: 500;
+   transition: all 0.2s ease;
+}
+
+.contactItem a:visited {
+  color: #8a2be2; 
+}
+
+.contactItem a:hover{
+  color: #0051cc;
+  text-decoration: underline;
+}
 
 @media (max-width: 600px) {
-  .content { grid-template-columns: 1fr; }
-  .titleInfo h1 {font-size: 1.2rem;}
-  .closeBtn {top: 0.5rem; right: 0.5rem;}
+  .content {
+    grid-template-columns: 1fr;
+  }
+  .titleInfo h1 {
+    font-size: 1.2rem;
+  }
+  .closeBtn {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  .headline{
+    font-size: 14px;
+  }
+  .mainInfo{
+    font-size: 15px;
+  }
 }

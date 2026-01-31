@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Calendar, Search } from 'lucide-react';
 import styles from './SearchBar.module.css';
 
 const SearchBar = ({
@@ -40,7 +40,7 @@ const SearchBar = ({
         value={selectedAno}
         onChange={(e) => onAnoChange(e.target.value)}
       >
-        <option value="">Todos os Anos</option>
+        <option value="">Todos os Anos <Calendar size={20}/></option>
         {anos.map(ano => (
           <option key={ano} value={ano}>{ano}</option>
         ))}
