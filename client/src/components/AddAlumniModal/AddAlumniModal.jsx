@@ -2079,7 +2079,8 @@ export default function AddAlumniModal({
             />
 
             <Field
-              label="Tempo Total de Experiência"
+              label="Tempo no cargo atual (anos)"
+              helper="Considere apenas o tempo na função/cargo atual, não a experiência profissional total."
               input={
                 <input
                   type="number"
@@ -2092,7 +2093,7 @@ export default function AddAlumniModal({
                       val === '' ? '' : Number(val),
                     );
                   }}
-                  placeholder="ex: 5"
+                  placeholder="ex: 3"
                   min="0"
                   max="60"
                   onWheel={(e) => e.target.blur()}
