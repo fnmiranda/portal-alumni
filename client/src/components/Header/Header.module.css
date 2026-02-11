@@ -4,15 +4,15 @@
   width: 100%;
   background-image: linear-gradient(
     to top,
-    #121a36 20%,
-    rgba(250, 105, 19, 0.6) 160%
+    rgba(250, 105, 19, 0.6),
+    #121a36 40%
   );
 }
 
 .headerContent {
   padding: 1rem 2rem;
   height: 5rem;
-  max-width: 1520px;
+  max-width: 1240px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -111,6 +111,7 @@
   font-weight: 500;
   line-height: 1.55;
   justify-content: center;
+  margin-bottom: 40px;
 }
 
 .titleAlum {
@@ -158,6 +159,9 @@
 }
 
 @media (max-width: 500px) {
+  .subtitle {
+    margin-bottom:20px;
+  }
   .addBtn {
     width: 150px;
   }

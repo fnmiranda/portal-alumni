@@ -12,7 +12,7 @@ import { getAlumni, upsertMyProfile, getMyProfile } from '../../services/api';
 // Estilos
 import styles from './Home.module.css';
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 8;
 
 // 1. OTIMIZAÇÃO: Função movida para fora do componente
 const normalize = (str) => {
@@ -133,7 +133,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
         onAddClick={() => setIsAddModalOpen(true)}
         addLabel={hasProfile ? 'Editar Perfil' : 'Adicionar Perfil'}
       />
-      <div className={styles.footerDivider}></div>
+      {/* <div className={styles.footerDivider}></div> */}
 
 
       <main className={styles.container}>
