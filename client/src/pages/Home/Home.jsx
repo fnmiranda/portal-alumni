@@ -131,7 +131,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
         onAddClick={() => setIsAddModalOpen(true)}
-        addLabel={hasProfile ? 'Editar Perfil' : 'Adicionar Perfil'}
+        addLabel={hasProfile ? 'EDITAR PERFIL' : 'ADICIONAR PERFIL'}
       />
       {/* <div className={styles.footerDivider}></div> */}
 

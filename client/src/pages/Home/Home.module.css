@@ -166,7 +166,7 @@
     background-image: linear-gradient(
     to top,
     #121a36 20%,
-    rgba(250, 105, 19, 0.6) 160%
+    #b5a375 160%
   );
   border-color: #cc4b0064;
 }
@@ -197,7 +197,7 @@
 }
 
 .active {
-  background-color: #e65500 !important; 
+  background-color: #b5a375 !important; 
   color: white !important;
 }
 
