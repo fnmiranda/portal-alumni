@@ -17,7 +17,6 @@ const Header = ({
     localStorage.removeItem('token');
   };
 
-
   const links = [
     {
       src: 'https://alumniime.com.br/',
@@ -30,6 +29,10 @@ const Header = ({
     {
       src: 'https://alumniime.com.br/projetos',
       label: 'PROJETOS',
+    },
+    {
+      src: 'http://localhost:5173/',
+      label: 'PORTAL DE ALUNOS',
     },
     {
       src: 'https://www.reserva.ink/alumniime#',
@@ -63,15 +66,17 @@ const Header = ({
           </div>
         </h1>
         <div className={styles.linksContainer}>
-          {links.map((path, index) => (
-            <a
-              key={index}
-              className={styles.links}
-              href={path.src}
-            >
-              {path.label}
-            </a>
-          ))}
+          {links.map((path, index) =>
+            path.label === 'PORTAL DE ALUNOS' ? (
+              <a key={index} className={styles.linkPortal} href={path.src}>
+                {path.label}
+              </a>
+            ) : (
+              <a key={index} className={styles.links} href={path.src}>
+                {path.label}
+              </a>
+            ),
+          )}
         </div>
         <div className={styles.actions}>
           {isLoggedIn ? (
