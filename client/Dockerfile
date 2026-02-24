@@ -16,6 +16,6 @@ FROM nginx:stable-alpine
 # Copia o build do estágio anterior
 COPY --from=build /app/dist /usr/share/nginx/html
 # Configuração básica do Nginx para Single Page Application
-RUN echo 'server { listen 80; location /portal/ { alias /usr/share/nginx/html/; try_files $uri $uri/ /portal/index.html; } }' > /etc/nginx/conf.d/default.conf
+RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

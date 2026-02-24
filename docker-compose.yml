@@ -18,7 +18,7 @@ services:
     build:
       context: ./client
       args:
-        - VITE_API_URL=https://portal.alumniime.com.br/api
+        - VITE_API_URL=/api
     container_name: alumni_frontend
     restart: always
     ports:
