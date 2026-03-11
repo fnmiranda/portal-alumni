@@ -15,7 +15,10 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5173',
-  'https://portal-alumni-ruddy.vercel.app'
+  'https://alumniime.com.br',
+  'https://portal-alumni-ruddy.vercel.app',
+  'http://portal.alumniime.com.br',  // Provisório (para testes amanhã cedo)
+  'https://portal.alumniime.com.br'
 ];
 
 // --- 1. LOGGER DE EMERGÊNCIA (DEVE SER O PRIMEIRO) ---
@@ -73,10 +76,8 @@ app.get('/', (req, res) => {
 app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3001;
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
 
 module.exports = app;

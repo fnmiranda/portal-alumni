@@ -1410,9 +1410,9 @@ export default function AddAlumniModal({
               ? p.skills
               : typeof p.skills === 'string' && p.skills.trim()
                 ? p.skills
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
                 : [],
           }));
         } catch (err) {
@@ -1969,9 +1969,9 @@ export default function AddAlumniModal({
 
                         {/* fallback se a cidade salva não estiver na lista */}
                         {form.city &&
-                        !loadingCities &&
-                        Array.isArray(cities) &&
-                        !cities.includes(String(form.city).trim()) ? (
+                          !loadingCities &&
+                          Array.isArray(cities) &&
+                          !cities.includes(String(form.city).trim()) ? (
                           <option value={String(form.city).trim()}>
                             {String(form.city).trim()} (salvo)
                           </option>

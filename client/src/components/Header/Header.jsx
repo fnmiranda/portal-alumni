@@ -39,8 +39,6 @@ const Header = ({
             <img
               src="https://optim.tildacdn.one/tild6638-3331-4435-b761-623064663465/-/resize/90x/-/format/webp/AlumniIME_Logo.png.webp"
               alt="Logo alumni"
-              width={96}
-              height={120}
             />
           </div>
         </h1>
