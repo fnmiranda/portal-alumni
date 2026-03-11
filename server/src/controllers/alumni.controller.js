@@ -3,11 +3,12 @@ const prisma = require('../database/prisma');
 // --- LISTAGEM ---
 const listAlumni = async (req, res, next) => {
   try {
-    const { course, graduationYear, city } = req.query;
+    const { course, graduationYear, city, role } = req.query;
 
     const where = {};
     if (course) where.course = course;
     if (graduationYear) where.graduationYear = Number(graduationYear);
+    if (role) where.role = role;
     if (city) where.city = { contains: city, mode: 'insensitive' };
 
     const alumni = await prisma.alumnus.findMany({

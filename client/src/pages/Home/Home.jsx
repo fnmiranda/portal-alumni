@@ -33,6 +33,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCurso, setSelectedCurso] = useState('');
   const [selectedAno, setSelectedAno] = useState('');
+  const [selectedArea, setSelectedArea] = useState('');
 
   // UI
   const [page, setPage] = useState(1);
@@ -70,8 +71,9 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
     const query = {};
     if (selectedCurso) query.course = selectedCurso;
     if (selectedAno) query.graduationYear = selectedAno;
+    if (selectedArea) query.role = selectedArea;
     fetchAlumni(query);
-  }, [selectedCurso, selectedAno]);
+  }, [selectedCurso, selectedAno, selectedArea]);
 
   // verifica se usuário já tem perfil
   useEffect(() => {
@@ -102,6 +104,12 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
     ].sort((a, b) => b - a);
   }, [filterOptions]);
 
+  const areasUnicas = useMemo(() => {
+    return [
+      ...new Set(filterOptions.map((a) => a.role).filter(Boolean)),
+    ].sort();
+  }, [filterOptions]);
+
   const filteredAlumni = useMemo(() => {
     // A função normalize agora é externa
     const search = normalize(searchTerm);
@@ -115,7 +123,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
   // reset de página ao mudar filtros/busca
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, selectedCurso, selectedAno]);
+  }, [searchTerm, selectedCurso, selectedAno, selectedArea]);
 
   // -------------------------
   // PAGINAÇÃO
@@ -155,6 +163,10 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
           anos={anosUnicos}
           selectedAno={selectedAno}
           onAnoChange={setSelectedAno}
+          areas={areasUnicas}
+          selectedArea={selectedArea}
+          onAreaChange={setSelectedArea}
+
         />
 
         {!loading && (
@@ -197,11 +209,11 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
-                  &lt; 
+                  &lt;
                 </button>
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => {
-                  if ( num === 1 || num === totalPages || (num >= page - 1 && num <= page + 1) ) {
+                  if (num === 1 || num === totalPages || (num >= page - 1 && num <= page + 1)) {
                     return (
                       <button
                         key={num}
@@ -227,7 +239,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >
-                  &gt; 
+                  &gt;
                 </button>
               </div>
             )}
@@ -248,6 +260,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
                 setSearchTerm('');
                 setSelectedCurso('');
                 setSelectedAno('');
+                setSelectedArea('');
               }}
             >
               Limpar todos os filtros
@@ -273,6 +286,7 @@ const Home = ({ isLoggedIn, setIsLoggedIn }) => {
               const query = {};
               if (selectedCurso) query.course = selectedCurso;
               if (selectedAno) query.graduationYear = selectedAno;
+              if (selectedArea) query.role = selectedArea;
               await fetchAlumni(query);
             } catch (error) {
               console.error("Erro ao salvar perfil:", error);
