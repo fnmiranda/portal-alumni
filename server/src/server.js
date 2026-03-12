@@ -65,9 +65,9 @@ app.use(logger);
 
 // --- 6. ROTAS ---
 // --- 6. ROTAS ---
-app.use('/api/alumni', alumniRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/me', meRoutes);
+app.use('/alumni', alumniRoutes);
+app.use('/auth', authRoutes);
+app.use('/me', meRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({ status: 'Online' });
