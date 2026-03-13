@@ -1447,6 +1447,8 @@ export default function AddAlumniModal({
     };
   }, [form.photoPreviewUrl, form.photoFile]);
 
+
+
   function openCalendar() {
     const el = hiddenDateRef.current;
     if (!el) return;
@@ -1530,7 +1532,7 @@ export default function AddAlumniModal({
     );
     setCustomFieldError(birthInputRef, 'birthDate', birthMsg);
 
-    const gradMsg = validateGraduationYear(form.graduationYear);
+    const gradMsg = validateGraduationYear(form.brithDate, form.graduationYear);
     setCustomFieldError(gradYearInputRef, 'graduationYear', gradMsg);
 
     const phoneMsg = validatePhone(form.phone);
@@ -1545,6 +1547,7 @@ export default function AddAlumniModal({
     setShowValidation(true);
 
     runCustomValidations();
+    
 
     const formEl = formRef.current;
     if (formEl && !formEl.checkValidity()) {
@@ -1553,6 +1556,8 @@ export default function AddAlumniModal({
       firstInvalid?.focus();
       return;
     }
+
+    // validateGraduationYear(form.birthDate, form.graduationYear);
 
     if (!onSubmit) {
       setExtraErrors((prev) => ({
@@ -1874,7 +1879,7 @@ export default function AddAlumniModal({
                     setExtraErrors((prev) => ({ ...prev, graduationYear: '' }));
                   }}
                   onBlur={() => {
-                    const msg = validateGraduationYear(form.graduationYear);
+                    const msg = validateGraduationYear(form.birthDate,form.graduationYear);
                     setCustomFieldError(
                       gradYearInputRef,
                       'graduationYear',

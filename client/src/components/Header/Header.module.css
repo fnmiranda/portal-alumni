@@ -346,6 +346,9 @@
 }
 
 @media (max-width: 700px) {
+  .headerContent {
+    padding: 1rem 1.2rem;
+  }
   .titleAlum {
     font-size: 0rem;
   }
@@ -376,6 +379,16 @@
   }
   .headerContent {
     padding: 20px;
+  }
+
+  .loginBtn,
+  .addBtn,
+  .logoutBtn {
+    font-size: 14px;
+    padding: 0.6rem 1.6rem;
+  }
+  .headerContent {
+    padding: 1rem;
   }
 
   .loginBtn,
