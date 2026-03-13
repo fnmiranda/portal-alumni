@@ -45,7 +45,7 @@ const Header = ({
 
         {/* Botão visível apenas no Mobile */}
         <button className={styles.menuMobileIcon} onClick={toggleMenu}>
-          {isMenuOpen ? <X className={styles.closeMenuMob} /> : <Menu className={styles.toogleMenuMob} size={28} />}
+          {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
 
         {/* Links - Classe condicional para abrir/fechar no mobile */}
@@ -67,7 +67,7 @@ const Header = ({
             </a>
           ))}
           <div className={styles.actions}>
-            {!isLoggedIn ? (
+            {isLoggedIn ? (
               <>
                 <button className={styles.addBtn} onClick={onAddClick}>
                   <Plus size={16} /> {addLabel}

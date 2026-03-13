@@ -12,8 +12,9 @@
 }
 
 .headerContent {
-  padding: 1rem 2rem;
-  height: 5rem;
+  padding: 0.8rem 0.6rem;
+  height: 75px;
+  min-height: 64px;
   max-width: 1240px;
   margin: 0 auto;
   display: flex;
@@ -186,9 +187,8 @@
   font-weight: 800;
 }
 
-.logoWrapper img {
-  margin-right: 12px;
-  width:70px;
+.logoWrapper {
+  margin-right: 30px;
   transform: translateY(10%);
   z-index: 10;
 }
@@ -200,33 +200,17 @@
   color: #b5a375;
   cursor: pointer;
   z-index: 1001;
-  margin-top: 6px;
-  margin-right: -6px;
+  margin-top: 10px;
 }
-.closeMenuMob{
-  width: 38px;
-  height: 60px;
-}
-.toogleMenuMob{
-  width: 38px;
-  height: 60px; 
-  transform: scaleY(0.7);
-}
-
 
 @media (max-width: 1024px) {
   .menuMobileIcon {
     display: block;
   }
-
-  .closeMenuMob{
-    width: 38px;
-    height: 60px;
-  }
   .titleLogo img {
     width: 70px;
-    margin-top: 4px;
-    margin-right: 6px;
+    height: 80px;
+    margin-right: 8px;
   }
 
   .linksContainer {
@@ -235,7 +219,7 @@
     justify-content: center;
     align-items: center;
     position: absolute;
-    top: 4rem;
+    top: 5rem;
     left: 0;
     background-color: #121a36;
     gap: 0px;
@@ -245,15 +229,10 @@
 
     opacity: 0;
     overflow: hidden;
-    max-height: 0;
-    padding: 0;
-    pointer-events: none;
-    visibility: hidden;
     transition:
       max-height 500ms ease-in-out,
       opacity 300ms ease-in-out,
-      padding 300ms ease-in-out,
-      visibility 300ms ease-in-out;
+      padding 300ms ease-in-out;
   }
 
   .linksContainer.open {
@@ -261,11 +240,8 @@
     justify-content: center;
     max-height: 500px;
     opacity: 1;
-    padding: 1rem;
-    pointer-events: auto;
-    visibility: visible;
+    padding: 2rem;
     align-items: center;
-    gap:3px;
   }
 
   .linkPortal,
@@ -292,6 +268,78 @@
   .titleLogo {
     font-size: 0rem;
   }
+
+  .linksContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 3.4rem;
+    left: 0;
+    background-color: #121a36;
+    gap: 0px;
+    z-index: 1000;
+    border-bottom: 2px solid #b5a375;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+
+    opacity: 0;
+    overflow: hidden;
+    max-height: 0;            
+    padding: 20px;               
+    pointer-events: none;     
+    visibility: hidden;
+    transition:
+      max-height 500ms ease-in-out,
+      opacity 300ms ease-in-out,
+      padding 300ms ease-in-out,
+      visibility 300ms ease-in-out;
+  }
+  .logoWrapper{
+    height: auto;
+    padding: 0;
+  }
+  .logoWrapper img{
+    width: 50px;
+    height: 66px;
+    margin-left: 20px;
+  }
+
+  .linksContainer.open {
+    display: flex;
+    justify-content: center;
+    max-height: 500px;
+    opacity: 1;
+    padding: 30px 0 0 0;
+    gap: 19px;
+    pointer-events: auto;     
+    visibility: visible;
+    align-items: center;
+  }
+
+  .linkPortal,
+  .links {
+    font-size: 13.8px;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  .actions {
+    margin-top: 8px;
+    width: 100%;
+    padding: 20px 0px;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+  .addBtn,
+  .loginBtn,
+  .logoutBtn {
+    font-size: 14px;
+    /* padding: 0.8rem 0rem; */
+  }
+}
+
+@media (max-width: 900px) {
   .subtitle {
     font-size: 2rem;
   }
@@ -310,6 +358,10 @@
     text-align: center;
     padding: 0px 20px;
   }
+  .titleLogo img {
+    width: 50px;
+    height: 60px;
+  }
   .logoWrapper {
     transform: translateY(0%);
   }
@@ -325,9 +377,25 @@
   .logoutBtn {
     width: 90px;
   }
-  .titleLogo img {
-    width: 50px;
-    height: 60px;
+  .headerContent {
+    padding: 20px;
+  }
+
+  .loginBtn,
+  .addBtn,
+  .logoutBtn {
+    font-size: 14px;
+    padding: 0.6rem 1.6rem;
+  }
+  .headerContent {
+    padding: 1rem;
+  }
+
+  .loginBtn,
+  .addBtn,
+  .logoutBtn {
+    font-size: 14px;
+    padding: 0.6rem 1.6rem;
   }
   .headerContent {
     padding: 1rem;
