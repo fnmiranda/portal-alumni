@@ -24,7 +24,7 @@ import {
   validateGraduationYear,
   validatePhone,
 } from '../utils/alumniFormUtils';
-import { ALL_SKILLS } from '../Constants/skills.ts';
+import { ALL_SKILLS } from '../Constants/NewSkills.ts';
 import { DEFAULT_ROLE_GROUPS } from '../Constants/RouleGroups.ts';
 const DEFAULT_COURSES = [
   'Engenharia Cartográfica',
