@@ -15,6 +15,7 @@ api.interceptors.request.use((config) => {
 // Alumni
 export const getAlumni = (filters = {}) => {
   const cleanFilters = Object.fromEntries(
+    // eslint-disable-next-line no-unused-vars
     Object.entries(filters).filter(([_, v]) => v != null && v !== "")
   );
   return api.get('/alumni', { params: cleanFilters });
