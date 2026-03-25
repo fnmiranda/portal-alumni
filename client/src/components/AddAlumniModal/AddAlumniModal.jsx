@@ -1007,7 +1007,12 @@ export default function AddAlumniModal({
             />
 
             <Field
-              label="Habilidades"
+              label="Áreas de Atuação e Habilidades"
+              hint={
+                <span style={{ fontSize: '20px', color: '#444', display: 'block', marginTop: '5px' }}>
+                  💡 Digite uma área (ex: Gestão), aguarde a sugestão aparecer e clique nela para adicionar. Você pode adicionar várias. Caso não apareça uma habilidade específica, você ainda pode adicioná-la apertando Enter.
+                </span>
+                }
               fullWidth
               input={
                 <div className="skillsWrapper">
