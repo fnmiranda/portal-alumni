@@ -100,11 +100,13 @@ const Login = ({ setIsLoggedIn }) => {
           />
           <Mail color="#666" size={20} />
         </div>
+
         <div className={styles.inputBox}>
           <input
             type={showPassword ? 'text' : 'password'}
             placeholder="Senha"
             required
+            minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
