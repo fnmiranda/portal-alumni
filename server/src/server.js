@@ -16,6 +16,7 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://187.45.163.42',
   'https://alumniime.com.br',
   'https://portal.alumniime.com.br',
 ];
