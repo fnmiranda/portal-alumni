@@ -71,6 +71,7 @@ export default function AddAlumniModal({
   roles = DEFAULT_ROLE_GROUPS,
 }) {
   const [form, setForm] = useState(initialForm);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [extraErrors, setExtraErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -190,6 +191,7 @@ export default function AddAlumniModal({
     if (!isOpen) return;
 
     (async () => {
+      setIsLoadingData(true);
       try {
         isHydratingRef.current = true;
 
@@ -265,6 +267,7 @@ export default function AddAlumniModal({
           _form: 'Sessão expirada. Faça login novamente.',
         }));
       } finally {
+        setIsLoadingData(false);
         setTimeout(() => {
           isHydratingRef.current = false;
         }, 0);
@@ -475,7 +478,8 @@ export default function AddAlumniModal({
     <div className="overlay" role="dialog" aria-modal="true">
       <div className="modal">
         <header className="header">
-          <h2 className="title">Adicionar Seu Perfil</h2>
+          {/* Pequeno bônus: muda o título se for edição! */}
+          <h2 className="title">{isEditing ? 'Editar Seu Perfil' : 'Adicionar Seu Perfil'}</h2>
           <button
             type="button"
             className="closeButton"
@@ -486,11 +490,17 @@ export default function AddAlumniModal({
           </button>
         </header>
 
-        {extraErrors._form ? (
-          <div className="formError" role="alert">
-            {extraErrors._form}
+        {isLoadingData ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: '#666' }}>
+            <p>Carregando seus dados...</p>
           </div>
-        ) : null}
+        ) : (
+          <>
+            {extraErrors._form ? (
+              <div className="formError" role="alert">
+                {extraErrors._form}
+              </div>
+            ) : null}
 
         <form
           ref={formRef}
@@ -1101,6 +1111,8 @@ export default function AddAlumniModal({
             </button>
           </footer>
         </form>
+        </>
+        )}
       </div>
     </div>
   );

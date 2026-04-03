@@ -13,12 +13,6 @@ const AlumniCard = ({ data, onClick }) => {
         <p><MapPin size={16} /> {data.city}, {data.state}</p>
         <p><Building size={16} /> {data.company || 'Autônomo'}</p>
       </div>
-
-      <div className={styles.icons}>
-        <button title="Email"><Mail size={18} /></button>
-        <button title="Telefone"><Phone size={18} /></button>
-        {data.linkedinUrl && <button title="LinkedIn"><Linkedin size={18} /></button>}
-      </div>
     </div>
   );
 };

@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  schemas   = ["public", "auth"]
 }
 
 model Alumnus {
@@ -33,8 +35,15 @@ model Alumnus {
   skills            String[]
   user_id           String?  @unique @db.Uuid
   users             users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
+  
+  
+  @@index([course])
+  @@index([graduationYear])
+  @@index([role])
+  @@index([city])
+  @@index([fullName])
   @@map("alumni")
+  @@schema("public")
 }
 
 model users {
@@ -50,6 +59,7 @@ model users {
   alumni                 Alumnus?
 
   @@map("users")
+  @@schema("public")
 }
 
 // NOVA TABELA PARA OS USUÁRIOS QUE AINDA NÃO CLICARAM NO LINK DO E-MAIL
@@ -63,4 +73,5 @@ model pending_users {
   created_at    DateTime @default(now()) @db.Timestamptz(6)
 
   @@map("pending_users")
+  @@schema("public")
 }

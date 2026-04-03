@@ -48,20 +48,11 @@ const listAlumni = async (req, res, next) => {
 
 const getFilterOptions = async (req, res) => {
   try {
-    const coursesData = await prisma.alumnus.findMany({
-      select: { course: true },
-      distinct: ['course'],
-    });
-
-    const yearsData = await prisma.alumnus.findMany({
-      select: { graduationYear: true },
-      distinct: ['graduationYear'],
-    });
-
-    const rolesData = await prisma.alumnus.findMany({
-      select: { role: true },
-      distinct: ['role'],
-    });
+    const [coursesData, yearsData, rolesData] = await Promise.all([
+      prisma.alumnus.findMany({ select: { course: true }, distinct: ['course'] }),
+      prisma.alumnus.findMany({ select: { graduationYear: true }, distinct: ['graduationYear'] }),
+      prisma.alumnus.findMany({ select: { role: true }, distinct: ['role'] })
+    ]);
 
     res.json({
       courses: coursesData.map(c => c.course).filter(Boolean).sort(),

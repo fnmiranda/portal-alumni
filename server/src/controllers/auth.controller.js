@@ -85,7 +85,9 @@ async function register(req, res, next) {
       }
     });
 
-    await sendConfirmationEmail(email, fullName, verificationToken);
+    sendConfirmationEmail(email, fullName, verificationToken).catch(err => {
+      console.error("Erro ao enviar e-mail de confirmação em background:", err);
+    });
 
     return res.status(201).json({ message: "Link de confirmação enviado para o seu e-mail." });
   } catch (err) {
@@ -204,7 +206,9 @@ async function forgotPassword(req, res, next) {
 
     const userName = found[fields.fullName] || 'usuário';
     
-    await sendPasswordResetEmail(found.email, userName, token);
+    sendPasswordResetEmail(found.email, userName, token).catch(err => {
+      console.error("Erro ao enviar e-mail de recuperação em background:", err);
+    });
 
     return res.status(200).json(genericResponse);
   } catch (err) {
