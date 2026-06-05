@@ -24,7 +24,7 @@ const profileSchema = z
     yearsOfExperience: z.coerce.number().optional().nullable(),
     role: z.string().optional().nullable(),
     phone: z.string().min(10),
-    linkedinUrl: z.string().optional().or(z.literal('')),
+    linkedinUrl: z.string().url().optional().or(z.literal('')),
     bio: z.preprocess((value) => {
       if (
         value === '' ||

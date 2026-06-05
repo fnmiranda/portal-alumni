@@ -365,8 +365,30 @@ export default function AddAlumniModal({
     }
   }
 
+  function normalizeLinkedinUrl(url) {
+    let cleaned = url.trim();
+    if (!cleaned) return '';
+
+    // Caso 1: O usuário digitou apenas o username (ex: "joaosilva" ou "/joaosilva")
+    if (!cleaned.toLowerCase().includes('linkedin.com')) {
+      cleaned = cleaned.replace(/^\/+|\/+$/g, ''); // Remove barras extras do início ou fim
+      return `https://www.linkedin.com/in/${cleaned}`;
+    }
+
+    // Caso 2: Contém "linkedin.com". Vamos remover http://, https:// e www. antigos para padronizar
+    cleaned = cleaned.replace(/^(https?:\/\/)?(www\.)?/i, '');
+
+    // Garante que o "/in/" exista logo após o linkedin.com
+    if (!/^linkedin\.com\/in\//i.test(cleaned)) {
+      cleaned = cleaned.replace(/^linkedin\.com\/?/i, 'linkedin.com/in/');
+    }
+
+    // Retorna com o prefixo padrão correto
+    return `https://www.${cleaned}`;
+  }
+
   function validateLinkedinUrl(url) {
-    const linkedinPattern = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\//i;
+    const linkedinPattern = /^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-_.%]+\/?$/i;
 
     if (!url || !linkedinPattern.test(url)) {
       return 'URL de LinkedIn inválida. Por favor, insira uma URL válida do LinkedIn.';
@@ -420,6 +442,9 @@ export default function AddAlumniModal({
   // Corrige a URL do LinkedIn se necessário
   let updatedLinkedinUser = form.linkedinUser ? form.linkedinUser.trim() : '';
   if (updatedLinkedinUser !== '') {
+    updatedLinkedinUser = normalizeLinkedinUrl(updatedLinkedinUser);
+    console.log("Foi normalizado");
+
     const linkedinMsg = validateLinkedinUrl(updatedLinkedinUser);
     if (linkedinMsg) {
       setExtraErrors((prev) => ({
